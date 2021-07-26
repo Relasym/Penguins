@@ -1,0 +1,49 @@
+* {
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+}
+
+html {
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.gamebox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.canvasflexbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: black;
+}
+
+.statlist {
+    position: absolute;
+    list-style: none;
+    left: 100px;
+    top: 100px;
+}
+
+.penguin {
+    display:none;
+}
+
+.fish {
+    display:none;
+}
