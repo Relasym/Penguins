@@ -5,6 +5,7 @@ const gravity = 0.1;
 const bounceRatio = 0.8;
 const currentInputs = new Set();
 const factionAmount = 10; //realistically no more than 3
+fishcounter = 0;
 
 const penguinImage = document.getElementsByClassName("penguin").item(0);
 const fishImage = document.getElementsByClassName("fish").item(0);
@@ -53,12 +54,7 @@ function start() {
     $(".statlist .stat9").hide();
     $(".statlist .stat10 .type").html("frametime: ");
 
-    //create player
-    player = new Player(300, 300, 59, 100, new jQuery.Color("white"), 1);
-    player.hasCollision = true;
-    player.faction = 1;
-    player.affectedByGravity = false;
-    player.register();
+
 
 
     //create circles
@@ -97,8 +93,8 @@ function start() {
     for (i = 0; i < 10; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
-        width = 100;
-        height = 50;
+        width = 70;
+        height = 30;
         speed = 1;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
@@ -127,9 +123,16 @@ function start() {
     // wallCenter.faction = 0;
     // wallCenter.register();
 
+    //create player last so its drawn last, great solution right here
+    player = new Player(300, 300, 59, 100, new jQuery.Color("white"), 1);
+    player.hasCollision = true;
+    player.faction = 1;
+    player.affectedByGravity = false;
+    player.register();
+
 
     mainLoop();
-    console.log(objectsByFaction[0])
+    // console.log(objectsByFaction[0])
 
 }
 
@@ -170,6 +173,7 @@ function mainLoop() {
     $(".statlist .stat4 .value").html(collisionObjects.length);
     $(".statlist .stat5 .value").html(terrainObjects.length);
     $(".statlist .stat10 .value").html(performance.now() - currentTime + "ms");
+    $(".fishcounter").html(fishcounter);
     currentTime = performance.now();
 }
 
@@ -237,6 +241,10 @@ function handleCollisions() {
                     for (object2 of objectsByFaction[j]) {
                         if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
                             // TODO Collisions between objects from 
+                            if(object1.constructor.name=="Player" && object2.constructor.name=="Fish") {
+                                object2.startDestruction();
+                                fishcounter++;
+                            }
                         }
                     }
                 }
@@ -263,13 +271,13 @@ function areObjectsColliding(object1, object2) {
     name1 = object1.constructor.name;
     name2 = object2.constructor.name;
     if (name1 == "Rectangle" || name1 == "MovingRectangle" || name1 == "Player" || name1 == "TerrainRectangle" || name1 == "Actor" || name1 == "Fish") {
-        if (name2 == "Rectangle" || name2 == "MovingRectangle" || name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name1 == "Fish") {
+        if (name2 == "Rectangle" || name2 == "MovingRectangle" || name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name2 == "Fish") {
             return collisionRectangleRectangle(object1, object2);
         } else {
             return collisionRectangleCircle(object1, object2);
         }
     } else {
-        if (name2 == "Rectangle" || name2 == "MovingRectangle" || typeof name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name1 == "Fish") {
+        if (name2 == "Rectangle" || name2 == "MovingRectangle" || typeof name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name2 == "Fish") {
             return collisionRectangleCircle(object2, object1); //<- IMPORTANT
         } else {
             return collisionCircleCircle(object1, object2);
