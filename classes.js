@@ -34,7 +34,7 @@ class BasicObject {
 
     update() {
         if (this.isDestroying) {
-            this.destructionProgress -= 0.01;
+            this.destructionProgress -= 0.11;
         }
         if (this.destructionProgress <= 0) {
             this.deregister();
@@ -185,19 +185,19 @@ class Actor extends MovingRectangle {
         super.startDestruction();
         objectsByFaction[this.faction].splice(objectsByFaction[this.faction].indexOf(this), 1);
     }
-    update() {
-        super.update();
-        let currentTime = performance.now()
-        if (currentTime > this.lastFire + this.refireDelay) {
-            let projectile = new Projectile(this.x + this.width / 2, this.y + this.height / 2, 5, new jQuery.Color(this.color.rgba()))
-            projectile.velocity.x = (this.velocity.x > 0) ? this.velocity.x * 0.5 + 5 : this.velocity.x * 0.5 - 5;
-            projectile.velocity.y = this.velocity.y * 0.5;
-            projectile.faction = this.faction;
-            projectile.register();
-            this.lastFire = currentTime;
-        }
-
-    }
+    // remove cause fish don't shoot. usually.
+    // update() {
+    //     super.update();
+    //     let currentTime = performance.now()
+    //     if (currentTime > this.lastFire + this.refireDelay) {
+    //         let projectile = new Projectile(this.x + this.width / 2, this.y + this.height / 2, 5, new jQuery.Color(this.color.rgba()))
+    //         projectile.velocity.x = (this.velocity.x > 0) ? this.velocity.x * 0.5 + 5 : this.velocity.x * 0.5 - 5;
+    //         projectile.velocity.y = this.velocity.y * 0.5;
+    //         projectile.faction = this.faction;
+    //         projectile.register();
+    //         this.lastFire = currentTime;
+    //     }
+    // }
 }
 class Fish extends Actor {
     constructor(x, y, width, height, color) {
@@ -216,8 +216,8 @@ class Fish extends Actor {
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(fishImage, this.x, this.y);
+        // context.fillRect(this.x, this.y, this.width, this.height);
+        context.drawImage(fishImage, this.x, this.y,this.width,this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
@@ -310,8 +310,8 @@ class Player extends MovingRectangle {
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(penguinImage, this.x, this.y);
+        // context.fillRect(this.x, this.y, this.width, this.height);
+        context.drawImage(penguinImage, 55,0,115,200,this.x, this.y,this.width,this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
