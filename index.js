@@ -268,16 +268,16 @@ function handleCollisions() {
 
 
 function areObjectsColliding(object1, object2) {
-    name1 = object1.constructor.name;
-    name2 = object2.constructor.name;
-    if (name1 == "Rectangle" || name1 == "MovingRectangle" || name1 == "Player" || name1 == "TerrainRectangle" || name1 == "Actor" || name1 == "Fish") {
-        if (name2 == "Rectangle" || name2 == "MovingRectangle" || name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name2 == "Fish") {
+    type1 = object1.type;
+    type2 = object2.type;
+    if (type1="rectangle") {
+        if (type2="rectangle") {
             return collisionRectangleRectangle(object1, object2);
         } else {
             return collisionRectangleCircle(object1, object2);
         }
     } else {
-        if (name2 == "Rectangle" || name2 == "MovingRectangle" || typeof name2 == "Player" || name2 == "TerrainRectangle" || name2 == "Actor" || name2 == "Fish") {
+        if (type2="rectangle") {
             return collisionRectangleCircle(object2, object1); //<- IMPORTANT
         } else {
             return collisionCircleCircle(object1, object2);
