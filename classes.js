@@ -42,6 +42,7 @@ class BasicObject {
     }
 }
 class Circle extends BasicObject {
+    type="circle";
     isDrawable = true;
     hasCollision = true;
     constructor(x, y, radius, color) {
@@ -120,6 +121,7 @@ class Projectile extends MovingCircle {
     }
 }
 class Rectangle extends BasicObject {
+    type="rectangle";
     hasCollision = true;
     isDrawable = true;
     rotation = 0 * Math.PI / 180;
