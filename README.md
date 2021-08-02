@@ -4,7 +4,9 @@ Yes, Penguins
 
 todo:
 - General
-  - [ ] decouple simrate from framerate (check pausing & unfocus)
+  - [ ] decouple simrate from framerate (check unfocus)
+  - [ ] pause function
+  - [ ] menu
 - Collision and Drawing
   - [ ] implement polygon-polygon collision
   - [ ] unify object draw types
