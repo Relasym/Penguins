@@ -5,8 +5,8 @@ Yes, Penguins
 todo:
 - General
   - [ ] decouple simrate from framerate (check unfocus)
-  - [ ] pause function
-  - [ ] menu
+  - [x] pause function
+  - [x] menu
 - Collision and Drawing
   - [ ] implement polygon-polygon collision
   - [ ] unify object draw types
@@ -17,3 +17,5 @@ todo:
   - [ ] change autodestruct of objects to use level boundary
 - Content
   - [ ] add shark
+- Bugs
+  - [ ] fishcounter off sometimes, events not triggering correctly?
