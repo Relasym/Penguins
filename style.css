@@ -28,9 +28,50 @@ body {
 
 div.canvasflexbox {
     display: flex;
+    position: relative;
     justify-content: center;
     align-items: center;
     background: black;
+}
+
+div.canvasflexbox canvas {
+    z-index: 1;
+}
+
+div.pausemenu {
+    position: absolute;
+    width: 600px;
+    height: 400px;
+    left: 100px;
+    top: 100px;
+    background-color: rgb(41, 41, 41);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    border-radius: 5px;
+    border: 3px solid white;
+}
+
+.pausebutton {
+    color: white;
+    background-color: rgb(41, 41, 41);
+    border: 3px solid black;
+    border-radius: 5px;
+    font-size: 140%;
+    padding: 10px;
+}
+
+.gamepaused {
+    color: white;
+}
+
+.pausebutton:hover {
+    background-color: black;
+}
+
+.visible {
+    z-index: 99;
 }
 
 .statlist {
@@ -41,17 +82,17 @@ div.canvasflexbox {
 }
 
 .penguin {
-    display:none;
+    display: none;
     border: 3px solid red;
     height: 100px;
     width: 50px;
-    object-fit:cover;
+    object-fit: cover;
 }
 
 .fish {
-    display:none;
+    display: none;
     border: 3px solid red;
     height: 50px;
     width: 100px;
-    object-fit:cover;
+    object-fit: cover;
 }
