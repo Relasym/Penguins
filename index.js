@@ -5,23 +5,17 @@ const gravity = 0.1;
 const bounceRatio = 0.8;
 const currentInputs = new Set();
 const factionAmount = 10; //realistically no more than 3
+
 fishcounter = 0;
+
+isPaused = false;
 
 const penguinImage = document.getElementsByClassName("penguin").item(0);
 const fishImage = document.getElementsByClassName("fish").item(0);
-/*
-TODO
-disconnect animation speed from framerate
-add camera
-unify circle&rectangle objects
-
-later:
-level syntax
-add levels
-level generator
+const pauseButton = document.getElementsByClassName("pausebutton").item(0);
+const pauseMenu = document.getElementsByClassName("pausemenu").item(0);
 
 
-*/
 
 allObjects = [];
 drawableObjects = [];
@@ -140,41 +134,47 @@ function mainLoop() {
     //recursion
     requestAnimationFrame(mainLoop);
 
-    //reset frame
-    context.fillStyle = "rgba(102,204,255,1)";
 
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.fillRect(0, 0, canvas.width, canvas.height);
 
-    //update objects
-    updateableObjects.forEach(object => {
-        object.update();
-    })
+    if (!isPaused) {
+        //reset frame
+        context.fillStyle = "rgba(102,204,255,1)";
 
-    //collision testing after updating but before drawing
-    handleCollisions();
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
-    //cleanup offscreen objects
-    drawableObjects.forEach(object => {
-        if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
-            object.deregister();
-        }
-    })
+        //update objects
+        updateableObjects.forEach(object => {
+            object.update();
+        })
 
-    //draw objects
-    drawableObjects.forEach(object => {
-        object.draw();
-    })
+        //collision testing after updating but before drawing
+        handleCollisions();
 
-    //update stats
-    $(".statlist .stat1 .value").html(allObjects.length);
-    $(".statlist .stat2 .value").html(drawableObjects.length);
-    $(".statlist .stat3 .value").html(updateableObjects.length);
-    $(".statlist .stat4 .value").html(collisionObjects.length);
-    $(".statlist .stat5 .value").html(terrainObjects.length);
-    $(".statlist .stat10 .value").html(performance.now() - currentTime + "ms");
-    $(".fishcounter").html(fishcounter);
-    currentTime = performance.now();
+        //cleanup offscreen objects
+        drawableObjects.forEach(object => {
+            if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
+                object.deregister();
+            }
+        })
+
+        //draw objects
+        drawableObjects.forEach(object => {
+            object.draw();
+        })
+
+        //update stats
+        $(".statlist .stat1 .value").html(allObjects.length);
+        $(".statlist .stat2 .value").html(drawableObjects.length);
+        $(".statlist .stat3 .value").html(updateableObjects.length);
+        $(".statlist .stat4 .value").html(collisionObjects.length);
+        $(".statlist .stat5 .value").html(terrainObjects.length);
+        $(".statlist .stat10 .value").html(performance.now() - currentTime + "ms");
+        $(".fishcounter").html(fishcounter);
+        currentTime = performance.now();
+    }
+
+
 }
 
 /*collision functions */
@@ -241,7 +241,7 @@ function handleCollisions() {
                     for (object2 of objectsByFaction[j]) {
                         if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
                             // TODO Collisions between objects from 
-                            if(object1.constructor.name=="Player" && object2.constructor.name=="Fish") {
+                            if (object1.constructor.name == "Player" && object2.constructor.name == "Fish") {
                                 object2.startDestruction();
                                 fishcounter++;
                             }
@@ -265,19 +265,25 @@ function handleCollisions() {
 
 }
 
+function tooglePause() {
+    console.log("pause/unpause");
+    pauseMenu.classList.toggle("visible");
+    isPaused = !isPaused;
+
+}
 
 
 function areObjectsColliding(object1, object2) {
     type1 = object1.type;
     type2 = object2.type;
-    if (type1="rectangle") {
-        if (type2="rectangle") {
+    if (type1 = "rectangle") {
+        if (type2 = "rectangle") {
             return collisionRectangleRectangle(object1, object2);
         } else {
             return collisionRectangleCircle(object1, object2);
         }
     } else {
-        if (type2="rectangle") {
+        if (type2 = "rectangle") {
             return collisionRectangleCircle(object2, object1); //<- IMPORTANT
         } else {
             return collisionCircleCircle(object1, object2);
@@ -316,7 +322,11 @@ function normalize(vector) {
 /* logging pressed keys */
 document.addEventListener('keydown', keypress => {
     currentInputs.add(keypress.key);
-    // console.log(pressedKeys)
+    if (keypress.key == "Escape") {
+        tooglePause();
+
+    }
+    console.log(currentInputs)
 });
 document.addEventListener('keyup', keypress => {
     currentInputs.delete(keypress.key);
@@ -333,6 +343,7 @@ document.addEventListener('mousedown', btn => {
 document.addEventListener('mouseup', btn => {
     currentInputs.delete("MB" + btn.button)
 });
+pauseButton.addEventListener("click", () => {tooglePause(); })
 
 start()
 
