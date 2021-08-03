@@ -19,3 +19,4 @@ todo:
   - [ ] add shark
 - Bugs
   - [ ] fishcounter off sometimes, events not triggering correctly?
+  - [ ] spacebar triggers pause menu after it has been opened once
