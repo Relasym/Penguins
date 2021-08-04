@@ -265,7 +265,7 @@ function handleCollisions() {
 
 }
 
-function tooglePause() {
+function togglePause() {
     console.log("pause/unpause");
     pauseMenu.classList.toggle("visible");
     isPaused = !isPaused;
@@ -323,8 +323,7 @@ function normalize(vector) {
 document.addEventListener('keydown', keypress => {
     currentInputs.add(keypress.key);
     if (keypress.key == "Escape") {
-        tooglePause();
-
+        togglePause();
     }
     console.log(currentInputs)
 });
@@ -343,7 +342,10 @@ document.addEventListener('mousedown', btn => {
 document.addEventListener('mouseup', btn => {
     currentInputs.delete("MB" + btn.button)
 });
-pauseButton.addEventListener("click", () => {tooglePause(); })
+pauseButton.addEventListener("click", function () {
+    togglePause();
+    this.blur();
+})
 
 start()
 
