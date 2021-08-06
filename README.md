@@ -1,10 +1,10 @@
 # Penguins
 
-Yes, Penguins
+Quickly, make a game about penguins before they go extinct
 
 todo:
 - General
-  - [ ] decouple simrate from framerate (check unfocus)
+  - [x] decouple simrate from framerate (still capped by framerate)
   - [x] pause function
   - [x] menu
 - Collision and Drawing
@@ -13,10 +13,13 @@ todo:
   - [x] add collision type to objects and simplify collision logic
 - Levels
   - [ ] add camera (possible issues with transformation matrix in rotateable objects?)
-  - [ ] implement level class (collection of drawable objects) + cleanup
+  - [ ] implement level class (collection of drawable objects) + cleanup (really necessary? basically a singleton)
   - [ ] change autodestruct of objects to use level boundary
 - Content
   - [ ] add shark
+  - [x] bubbles!
 - Bugs
+  - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] fishcounter off sometimes, events not triggering correctly?
   - [x] spacebar triggers pause menu after it has been opened once
+  - [ ] debug stattrackers too close in small windows
