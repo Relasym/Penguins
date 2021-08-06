@@ -1,17 +1,24 @@
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const startTime = performance.now();
-const gravity = 0.1;
+const gravity = 0.2; // units/s^2
 const bounceRatio = 0.8;
 const currentInputs = new Set();
-const factionAmount = 10; //realistically no more than 3
+const destructionTime=300; //ms
+camera = {x:0,y:0};
+
+
+simulationFPS = 144; //frames per second
+simulationTPF = 1000 / simulationFPS; //ms
+currentFrameDuration=0;
+
 
 fishcounter = 0;
-
 isPaused = false;
 
 const penguinImage = document.getElementsByClassName("penguin").item(0);
 const fishImage = document.getElementsByClassName("fish").item(0);
+
 const pauseButton = document.getElementsByClassName("pausebutton").item(0);
 const pauseMenu = document.getElementsByClassName("pausemenu").item(0);
 
@@ -24,6 +31,7 @@ collisionObjects = [];
 terrainObjects = [];
 projectileObjects = [];
 
+const factionAmount = 10; //realistically no more than 3
 const projectilesByFaction = []
 const objectsByFaction = []
 for (i = 0; i < factionAmount; i++) {
@@ -31,8 +39,7 @@ for (i = 0; i < factionAmount; i++) {
     objectsByFaction.push(new Array());
 }
 
-let frameTime = startTime;
-let currentTime = startTime;
+let lastFrameTime = 0;
 
 
 function start() {
@@ -92,7 +99,8 @@ function start() {
         speed = 1;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
-        color = new jQuery.Color("rgba(102,204,255,1)");
+        // color = new jQuery.Color("rgba(102,204,255,1)");
+        color = new jQuery.Color("rgba(0,0,0,1)");
         testRectangle = new Fish(x, y, width, height, color, true);
         testRectangle.velocity.x = xvel;
         testRectangle.velocity.y = yvel;
@@ -135,43 +143,49 @@ function mainLoop() {
     requestAnimationFrame(mainLoop);
 
 
-
     if (!isPaused) {
-        //reset frame
-        context.fillStyle = "rgba(102,204,255,1)";
+        currentFrameDuration=performance.now() - lastFrameTime;
+        if (currentFrameDuration > simulationTPF) {
+            
 
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillRect(0, 0, canvas.width, canvas.height);
+            //reset frame
+            context.fillStyle = "rgba(102,204,255,1)";
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.fillRect(0, 0, canvas.width, canvas.height);
 
-        //update objects
-        updateableObjects.forEach(object => {
-            object.update();
-        })
+            //update objects
+            updateableObjects.forEach(object => {
+                object.update();
+            })
 
-        //collision testing after updating but before drawing
-        handleCollisions();
+            //collision testing after updating but before drawing
+            handleCollisions();
 
-        //cleanup offscreen objects
-        drawableObjects.forEach(object => {
-            if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
-                object.deregister();
-            }
-        })
+            //cleanup offscreen objects
+            drawableObjects.forEach(object => {
+                if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
+                    object.deregister();
+                }
+            })
 
-        //draw objects
-        drawableObjects.forEach(object => {
-            object.draw();
-        })
+            //draw objects
+            drawableObjects.forEach(object => {
+                object.draw();
+            })
 
-        //update stats
-        $(".statlist .stat1 .value").html(allObjects.length);
-        $(".statlist .stat2 .value").html(drawableObjects.length);
-        $(".statlist .stat3 .value").html(updateableObjects.length);
-        $(".statlist .stat4 .value").html(collisionObjects.length);
-        $(".statlist .stat5 .value").html(terrainObjects.length);
-        $(".statlist .stat10 .value").html(performance.now() - currentTime + "ms");
-        $(".fishcounter").html(fishcounter);
-        currentTime = performance.now();
+
+            //update stats
+            $(".statlist .stat1 .value").html(allObjects.length);
+            $(".statlist .stat2 .value").html(drawableObjects.length);
+            $(".statlist .stat3 .value").html(updateableObjects.length);
+            $(".statlist .stat4 .value").html(collisionObjects.length);
+            $(".statlist .stat5 .value").html(terrainObjects.length);
+            $(".statlist .stat10 .value").html(performance.now() - lastFrameTime + "ms");
+            $(".fishcounter").html(fishcounter);
+
+            lastFrameTime=performance.now();
+        }
+
     }
 
 
@@ -268,8 +282,8 @@ function handleCollisions() {
 function togglePause() {
     console.log("pause/unpause");
     pauseMenu.classList.toggle("visible");
+    lastFrameTime=performance.now();
     isPaused = !isPaused;
-
 }
 
 
@@ -308,13 +322,13 @@ function collisionRectangleCircle(rectangle, circle) {
     return (dist <= circle.radius)
 }
 function collisionCircleCircle(circle1, circle2) {
-    return (pyth(circle1.x - circle2.x, circle1.y - circle2.y) <= (circle1.radius + circle2.radius))
+    return (vectorLength(circle1.x - circle2.x, circle1.y - circle2.y) <= (circle1.radius + circle2.radius))
 }
-function pyth(x, y) {
+function vectorLength(x, y) {
     return Math.sqrt(x * x + y * y)
 }
 function normalize(vector) {
-    length = pyth(vector.x, vector.y)
+    length = vectorLength(vector.x, vector.y)
     return { x: vector.x / length, y: vector.y / length }
 }
 
