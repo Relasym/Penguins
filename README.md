@@ -21,5 +21,7 @@ todo:
 - Bugs
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] fishcounter off sometimes, events not triggering correctly?
+  - [ ] pausemenu triggering for a frame or two, draw issue? (set menu invisible while in background?)
   - [x] spacebar triggers pause menu after it has been opened once
   - [ ] debug stattrackers too close in small windows
+  - [ ] framerate inconsistent (somehow)
