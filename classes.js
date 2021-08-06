@@ -1,18 +1,10 @@
-/*
-faction
-hasCollision = false;
-isDrawable = false;
-isUpdateable = false;
-isDestroying = false;
-affectedByGravity=false;
-
-*/
 class BasicObject {
     faction;
     hasCollision = false;
     isDrawable = false;
     isUpdateable = false;
     isDestroying = false;
+    destructionTime = 300; //ms
     destructionProgress = 1.0; //destroys object if it reaches 0, used as a multiplier for color alpha
 
     register() {
@@ -34,7 +26,7 @@ class BasicObject {
 
     update() {
         if (this.isDestroying) {
-            this.destructionProgress -= 0.11;
+            this.destructionProgress -= currentFrameDuration / this.destructionTime;
         }
         if (this.destructionProgress <= 0) {
             this.deregister();
@@ -42,19 +34,19 @@ class BasicObject {
     }
 }
 class Circle extends BasicObject {
-    type="circle";
+    type = "circle";
     isDrawable = true;
     hasCollision = true;
     constructor(x, y, radius, color) {
         super()
-        this.x = x
-        this.y = y
-        this.radius = radius
-        this.color = new jQuery.Color(color)
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.color = new jQuery.Color(color);
     }
     draw() {
-        context.beginPath()
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+        context.beginPath();
+        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
         if (this.isDestroying) {
             let color = [...this.color._rgba];
             color[3] *= this.destructionProgress;
@@ -62,10 +54,10 @@ class Circle extends BasicObject {
         } else {
             context.fillStyle = this.color;
         }
-        context.fill()
+        context.fill();
     }
     update() {
-        super.update()
+        super.update();
     }
 }
 class MovingCircle extends Circle {
@@ -73,23 +65,43 @@ class MovingCircle extends Circle {
     isUpdateable = true;
     velocity = { x: 0, y: 0 };
     constructor(x, y, radius, color) {
-        super(x, y, radius, color)
+        super(x, y, radius, color);
     }
     update() {
         super.update();
         if (this.affectedByGravity) {
-            this.velocity.y += gravity;
+            this.velocity.y += gravity * currentFrameDuration / 1000;
         }
         if (!this.isDestroying) {
-            this.x += this.velocity.x
-            this.y += this.velocity.y
+            this.x += this.velocity.x * currentFrameDuration / 1000;
+            this.y += this.velocity.y * currentFrameDuration / 1000;
         }
 
     }
 }
+
+class VisualMovingCircle extends Circle {
+    affectedByGravity = false;
+    isUpdateable = true;
+    velocity = { x: 0, y: 0 };
+    constructor(x, y, radius, color) {
+        super(x, y, radius, color);
+    }
+    update() {
+        super.update();
+        if (this.affectedByGravity) {
+            this.velocity.y += gravity * currentFrameDuration / 1000;
+        }
+            this.x += this.velocity.x * currentFrameDuration / 1000;
+            this.y += this.velocity.y * currentFrameDuration / 1000;
+    }
+}
+
+
+
 class TestEnemy extends MovingCircle {
     constructor(x, y, radius, color) {
-        super(x, y, radius, color)
+        super(x, y, radius, color);
     }
     register() {
         super.register();
@@ -103,25 +115,24 @@ class TestEnemy extends MovingCircle {
 class Projectile extends MovingCircle {
     hasCollision = true;
     constructor(x, y, radius, color) {
-        super(x, y, radius, color)
+        super(x, y, radius, color);
     }
     draw() {
-        super.draw()
+        super.draw();
     }
     register() {
-        super.register()
-        projectileObjects.push(this)
+        super.register();
+        projectileObjects.push(this);
         projectilesByFaction[this.faction].push(this);
-
     }
     deregister() {
-        super.deregister()
+        super.deregister();
         projectileObjects.splice(projectileObjects.indexOf(this), 1);
         projectilesByFaction[this.faction].splice(projectilesByFaction[this.faction].indexOf(this), 1);
     }
 }
 class Rectangle extends BasicObject {
-    type="rectangle";
+    type = "rectangle";
     hasCollision = true;
     isDrawable = true;
     rotation = 0 * Math.PI / 180;
@@ -154,7 +165,7 @@ class Rectangle extends BasicObject {
 }
 class MovingRectangle extends Rectangle {
     affectedByGravity = false;
-    isUpdateable = true
+    isUpdateable = true;
     velocity = { x: 0, y: 0 };
     constructor(x, y, width, height, color) {
         super(x, y, width, height, color)
@@ -162,11 +173,11 @@ class MovingRectangle extends Rectangle {
     update() {
         super.update()
         if (this.affectedByGravity) {
-            this.velocity.y += gravity;
+            this.velocity.y += gravity * currentFrameDuration / 1000;
         }
         if (!this.isDestroying) {
-            this.x += this.velocity.x
-            this.y += this.velocity.y
+            this.x += this.velocity.x * currentFrameDuration / 1000;
+            this.y += this.velocity.y * currentFrameDuration / 1000;
         }
 
     }
@@ -175,7 +186,7 @@ class MovingRectangle extends Rectangle {
 class Actor extends MovingRectangle {
     refireDelay = 1000; //ms
     lastFire = 0;
-    
+
     constructor(x, y, width, height, color) {
         super(x, y, width, height, color)
     }
@@ -215,11 +226,12 @@ class Fish extends Actor {
             context.fillStyle = this.color;
         }
 
+        context.globalAlpha = this.destructionProgress;
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(fishImage, this.x, this.y,this.width,this.height);
+        context.drawImage(fishImage, this.x, this.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
@@ -227,34 +239,36 @@ class Fish extends Actor {
 
 
 class Player extends MovingRectangle {
-    maxspeed = 5;
+    maxspeed = 5000;
     refireDelay = 50; //ms
     lastFire;
-    projectileSpeed=10;
-    
+    projectileSpeed = 10;
+
     constructor(x, y, width, height, color, speed) {
-        super(x, y, width, height, color)
-        this.speed = speed
+        super(x, y, width, height, color);
+        this.speed = speed;
         this.lastFire = performance.now();
     }
     update() {
         super.update()
         // this.velocity = { x: 0, y: 0 }
         //control
-        if (currentInputs.has("w")) { 
-            this.velocity.x+=this.speed*Math.sin(this.rotation)
-            this.velocity.y-=this.speed*Math.cos(this.rotation) }
-        if (currentInputs.has("s")) { 
-            this.velocity.x-=this.speed*Math.sin(this.rotation)
-            this.velocity.y+=this.speed*Math.cos(this.rotation) }
-        if (currentInputs.has("a")) { this.rotation-=0.03; }
-        if (currentInputs.has("d")) { this.rotation+=0.03; }
+        if (currentInputs.has("w")) {
+            this.velocity.x += this.speed * Math.sin(this.rotation)
+            this.velocity.y -= this.speed * Math.cos(this.rotation)
+        }
+        if (currentInputs.has("s")) {
+            this.velocity.x -= this.speed * Math.sin(this.rotation)
+            this.velocity.y += this.speed * Math.cos(this.rotation)
+        }
+        if (currentInputs.has("a")) { this.rotation -= 0.03; }
+        if (currentInputs.has("d")) { this.rotation += 0.03; }
         if (currentInputs.has(" ")) {
             let currentTime = performance.now()
             if (currentTime > this.lastFire + this.refireDelay) {
                 let projectile = new Projectile(this.x + this.width / 2, this.y + this.height / 2, 5, this.color)
-                projectile.velocity.x = 0.5*this.velocity.x + this.projectileSpeed*Math.sin(this.rotation);
-                projectile.velocity.y = 0.5*this.velocity.y + -1*this.projectileSpeed*Math.cos(this.rotation);
+                projectile.velocity.x = 0.5 * this.velocity.x + this.projectileSpeed * Math.sin(this.rotation);
+                projectile.velocity.y = 0.5 * this.velocity.y + -1 * this.projectileSpeed * Math.cos(this.rotation);
                 projectile.faction = this.faction;
                 projectile.register();
                 this.lastFire = currentTime;
@@ -262,10 +276,22 @@ class Player extends MovingRectangle {
 
         }
 
+        //bubbles
+        if (Math.random() < vectorLength(this.velocity.x, this.velocity.y)/200) {
+            let bubble = new VisualMovingCircle(this.x + this.width / 2, this.y + this.height, 5, "rgba(150,200,200,1)");
+            bubble.faction = this.faction;
+            bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
+            bubble.velocity.y = this.velocity.y * 0.5 + 50 * (Math.random() - 0.5);
+            bubble.destructionTime = 3000;
+            bubble.register();
+            bubble.startDestruction();
+        }
+
+
         //maximum "speed"
-        if(pyth(this.velocity.x,this.velocity.y)>this.maxspeed) {
-            this.velocity.x*=this.maxspeed/pyth(this.velocity.x,this.velocity.y);
-            this.velocity.y*=this.maxspeed/pyth(this.velocity.x,this.velocity.y);
+        if (vectorLength(this.velocity.x, this.velocity.y) > this.maxspeed) {
+            this.velocity.x *= this.maxspeed / vectorLength(this.velocity.x, this.velocity.y);
+            this.velocity.y *= this.maxspeed / vectorLength(this.velocity.x, this.velocity.y);
         }
         // this.velocity.x = Math.min(this.velocity.x, this.maxspeed)
         // this.velocity.x = Math.max(this.velocity.x, -1 * this.maxspeed)
@@ -273,15 +299,15 @@ class Player extends MovingRectangle {
         // this.velocity.y = Math.max(this.velocity.y, -1 * this.maxspeed)
 
         //movement
-        this.x += this.velocity.x
-        this.y += this.velocity.y
+        this.x += this.velocity.x * currentFrameDuration / 1000;
+        this.y += this.velocity.y * currentFrameDuration / 1000;
 
         //"ground"
-        if (this.y > canvas.height - this.height) {
-            this.y = canvas.height - this.height
-            this.velocity.y = 0
-            this.velocity.x = 0
-        }
+        // if (this.y > canvas.height - this.height) {
+        //     this.y = canvas.height - this.height;
+        //     this.velocity.y = 0;
+        //     this.velocity.x = 0;
+        // }
     }
     register() {
         super.register();
@@ -299,7 +325,7 @@ class Player extends MovingRectangle {
         } else {
             context.fillStyle = this.color;
         }
-        
+
         /*
         steps:
         move matrix to center of object
@@ -313,7 +339,7 @@ class Player extends MovingRectangle {
         context.rotate(this.rotation);
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(penguinImage, 55,0,115,200,this.x, this.y,this.width,this.height);
+        context.drawImage(penguinImage, 55, 0, 115, 200, this.x, this.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
@@ -322,7 +348,7 @@ class Player extends MovingRectangle {
 class TerrainRectangle extends Rectangle {
     hasCollision = true;
     constructor(x, y, width, height, color) {
-        super(x, y, width, height, color)
+        super(x, y, width, height, color);
     }
     register() {
         super.register();
