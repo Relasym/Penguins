@@ -81,6 +81,7 @@ class MovingCircle extends Circle {
 }
 
 class VisualMovingCircle extends Circle {
+    //normal moving circle, but moves while being destroyed
     affectedByGravity = false;
     isUpdateable = true;
     velocity = { x: 0, y: 0 };
@@ -92,8 +93,8 @@ class VisualMovingCircle extends Circle {
         if (this.affectedByGravity) {
             this.velocity.y += gravity * currentFrameDuration / 1000;
         }
-            this.x += this.velocity.x * currentFrameDuration / 1000;
-            this.y += this.velocity.y * currentFrameDuration / 1000;
+        this.x += this.velocity.x * currentFrameDuration / 1000;
+        this.y += this.velocity.y * currentFrameDuration / 1000;
     }
 }
 
@@ -213,6 +214,9 @@ class Actor extends MovingRectangle {
     // }
 }
 class Fish extends Actor {
+    image = fishImage;
+
+
     constructor(x, y, width, height, color) {
         super(x, y, width, height, color)
     }
@@ -226,13 +230,59 @@ class Fish extends Actor {
             context.fillStyle = this.color;
         }
 
+        context.save();
         context.globalAlpha = this.destructionProgress;
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
+        if (this.velocity.x < 0) {
+            context.scale(-1, 1);
+        }
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
         context.drawImage(fishImage, this.x, this.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
+        context.restore();
+    }
+
+}
+
+class Shark extends Actor {
+    image = sharkImage;
+
+    constructor(x, y, width, height, color) {
+        super(x, y, width, height, color)
+    }
+
+    draw() {
+        if (this.isDestroying) {
+            let color = [...this.color._rgba];
+            color[3] *= this.destructionProgress;
+            context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+        } else {
+            context.fillStyle = this.color;
+        }
+
+        context.save();
+        context.globalAlpha = this.destructionProgress;
+        context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        context.rotate(this.rotation);
+        if (this.velocity.x > 0) {
+            context.scale(-1, 1);
+        }
+        context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
+        // context.fillRect(this.x, this.y, this.width, this.height);
+        context.drawImage(sharkImage, this.x, this.y, this.width, this.height);
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.restore();
+    }
+
+    update() {
+        super.update();
+        if (objectsByFaction[1].length > 0) {
+            this.velocity.x += (objectsByFaction[1][0].x - this.x) / 50;
+            this.velocity.y += (objectsByFaction[1][0].y - this.y) / 50;
+        }
+
     }
 
 }
@@ -261,8 +311,8 @@ class Player extends MovingRectangle {
             this.velocity.x -= this.speed * Math.sin(this.rotation)
             this.velocity.y += this.speed * Math.cos(this.rotation)
         }
-        if (currentInputs.has("a")) { this.rotation -= 0.03; }
-        if (currentInputs.has("d")) { this.rotation += 0.03; }
+        if (currentInputs.has("a")) { this.rotation -= 0.1; }
+        if (currentInputs.has("d")) { this.rotation += 0.1; }
         if (currentInputs.has(" ")) {
             let currentTime = performance.now()
             if (currentTime > this.lastFire + this.refireDelay) {
@@ -277,7 +327,7 @@ class Player extends MovingRectangle {
         }
 
         //bubbles
-        if (Math.random() < vectorLength(this.velocity.x, this.velocity.y)/200) {
+        if (Math.random() < vectorLength(this.velocity.x, this.velocity.y) / 200) {
             let bubble = new VisualMovingCircle(this.x + this.width / 2, this.y + this.height, 5, "rgba(150,200,200,1)");
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
