@@ -16,7 +16,7 @@ todo:
   - [ ] implement level class (collection of drawable objects) + cleanup (really necessary? basically a singleton)
   - [ ] change autodestruct of objects to use level boundary
 - Content
-  - [ ] add shark
+  - [x] add shark
   - [x] bubbles!
 - Bugs
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
