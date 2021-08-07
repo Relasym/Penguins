@@ -18,6 +18,7 @@ isPaused = false;
 
 const penguinImage = document.getElementsByClassName("penguin").item(0);
 const fishImage = document.getElementsByClassName("fish").item(0);
+const sharkImage = document.getElementsByClassName("shark").item(0);
 
 const pauseButton = document.getElementsByClassName("pausebutton").item(0);
 const pauseMenu = document.getElementsByClassName("pausemenu").item(0);
@@ -91,12 +92,13 @@ function start() {
     //     testRectangle.register();
     // }
 
+    //create Fish
     for (i = 0; i < 10; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
-        width = 70;
-        height = 30;
-        speed = 1;
+        width = 50;
+        height = 20;
+        speed = 100;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
         // color = new jQuery.Color("rgba(102,204,255,1)");
@@ -107,6 +109,30 @@ function start() {
         testRectangle.faction = 2;
         testRectangle.register();
     }
+
+    //create Shark
+    for (i = 0; i < 1; i++) {
+        x = canvas.width * Math.random();
+        y = canvas.height * Math.random();
+        width = 100;
+        height = 40;
+        speed = 100;
+        xvel = speed * (Math.random() - 0.5);
+        yvel = speed * (Math.random() - 0.5);
+        // color = new jQuery.Color("rgba(102,204,255,1)");
+        color = new jQuery.Color("rgba(0,0,0,1)");
+        testRectangle = new Shark(x, y, width, height, color, true);
+        testRectangle.velocity.x = xvel;
+        testRectangle.velocity.y = yvel;
+        testRectangle.faction = 3;
+        testRectangle.register();
+    }
+
+
+
+
+
+
 
     // create border walls
     wallN = new TerrainRectangle(-100, -90, canvas.width + 200, 100, new jQuery.Color("blue"));
@@ -126,7 +152,7 @@ function start() {
     // wallCenter.register();
 
     //create player last so its drawn last, great solution right here
-    player = new Player(300, 300, 59, 100, new jQuery.Color("white"), 1);
+    player = new Player(300, 300, 30, 50, new jQuery.Color("white"), 3); //59/100
     player.hasCollision = true;
     player.faction = 1;
     player.affectedByGravity = false;
