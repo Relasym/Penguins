@@ -4,13 +4,14 @@ const startTime = performance.now();
 const gravity = 0.2; // units/s^2
 const bounceRatio = 0.8;
 const currentInputs = new Set();
-const destructionTime=300; //ms
-camera = {x:0,y:0};
+const destructionTime = 300; //ms
+const oceanColour = "rgba(102,204,255,1)";
+camera = { x: 0, y: 0 };
 
 
 simulationFPS = 144; //frames per second
 simulationTPF = 1000 / simulationFPS; //ms
-currentFrameDuration=0;
+currentFrameDuration = 0;
 
 
 fishcounter = 0;
@@ -53,44 +54,8 @@ function start() {
     $(".statlist .stat6").hide();
     $(".statlist .stat7").hide();
     $(".statlist .stat8").hide();
-    $(".statlist .stat9").hide();
+    $(".statlist .stat9 .type").html("Fish eaten: ");
     $(".statlist .stat10 .type").html("frametime: ");
-
-
-
-
-    //create circles
-    // for (i = 0; i < 10; i++) {
-    //     x = canvas.width * Math.random();
-    //     y = canvas.height * Math.random();
-    //     radius = 30 * Math.random() + 10;
-    //     speed = 0;
-    //     xvel = speed * (Math.random() - 0.5);
-    //     yvel = speed * (Math.random() - 0.5);
-    //     color = new jQuery.Color(`hsla(${Math.random() * 360},100%,50%,1)`);
-    //     testcircle = new TestEnemy(x, y, radius, color, true);
-    //     testcircle.velocity.x = xvel;
-    //     testcircle.velocity.y = yvel;
-    //     testcircle.faction = 2;
-    //     testcircle.register();
-    // }
-
-    //create rectangles
-    // for (i = 0; i < 10; i++) {
-    //     x = canvas.width * Math.random();
-    //     y = canvas.height * Math.random();
-    //     width = 45 * Math.random() + 10;
-    //     height = 45 * Math.random() + 10;
-    //     speed = 0;
-    //     xvel = speed * (Math.random() - 0.5);
-    //     yvel = speed * (Math.random() - 0.5);
-    //     color = new jQuery.Color(`hsla(${Math.random() * 360},100%,50%,1)`);
-    //     testRectangle = new Actor(x, y, width, height, color, true);
-    //     testRectangle.velocity.x = xvel;
-    //     testRectangle.velocity.y = yvel;
-    //     testRectangle.faction = 3;
-    //     testRectangle.register();
-    // }
 
     //create Fish
     for (i = 0; i < 10; i++) {
@@ -103,11 +68,11 @@ function start() {
         yvel = speed * (Math.random() - 0.5);
         // color = new jQuery.Color("rgba(102,204,255,1)");
         color = new jQuery.Color("rgba(0,0,0,1)");
-        testRectangle = new Fish(x, y, width, height, color, true);
-        testRectangle.velocity.x = xvel;
-        testRectangle.velocity.y = yvel;
-        testRectangle.faction = 2;
-        testRectangle.register();
+        fish = new Fish(x, y, width, height, color, true);
+        fish.velocity.x = xvel;
+        fish.velocity.y = yvel;
+        fish.faction = 2;
+        fish.register();
     }
 
     //create Shark
@@ -121,18 +86,12 @@ function start() {
         yvel = speed * (Math.random() - 0.5);
         // color = new jQuery.Color("rgba(102,204,255,1)");
         color = new jQuery.Color("rgba(0,0,0,1)");
-        testRectangle = new Shark(x, y, width, height, color, true);
-        testRectangle.velocity.x = xvel;
-        testRectangle.velocity.y = yvel;
-        testRectangle.faction = 3;
-        testRectangle.register();
+        shark = new Shark(x, y, width, height, color, true);
+        shark.velocity.x = xvel;
+        shark.velocity.y = yvel;
+        shark.faction = 3;
+        shark.register();
     }
-
-
-
-
-
-
 
     // create border walls
     wallN = new TerrainRectangle(-100, -90, canvas.width + 200, 100, new jQuery.Color("blue"));
@@ -158,10 +117,13 @@ function start() {
     player.affectedByGravity = false;
     player.register();
 
+    //draw empty frame behind menu
+    context.fillStyle = oceanColour;
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
+    togglePause();
+    pauseButton.textContent = "Start";
     mainLoop();
-    // console.log(objectsByFaction[0])
-
 }
 
 function mainLoop() {
@@ -170,12 +132,12 @@ function mainLoop() {
 
 
     if (!isPaused) {
-        currentFrameDuration=performance.now() - lastFrameTime;
+        currentFrameDuration = performance.now() - lastFrameTime;
         if (currentFrameDuration > simulationTPF) {
-            
+
 
             //reset frame
-            context.fillStyle = "rgba(102,204,255,1)";
+            context.fillStyle = oceanColour;
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -206,10 +168,11 @@ function mainLoop() {
             $(".statlist .stat3 .value").html(updateableObjects.length);
             $(".statlist .stat4 .value").html(collisionObjects.length);
             $(".statlist .stat5 .value").html(terrainObjects.length);
+            $(".statlist .stat9 .value").html(fishcounter);
             $(".statlist .stat10 .value").html(performance.now() - lastFrameTime + "ms");
             $(".fishcounter").html(fishcounter);
 
-            lastFrameTime=performance.now();
+            lastFrameTime = performance.now();
         }
 
     }
@@ -308,8 +271,9 @@ function handleCollisions() {
 function togglePause() {
     console.log("pause/unpause");
     pauseMenu.classList.toggle("visible");
-    lastFrameTime=performance.now();
+    lastFrameTime = performance.now();
     isPaused = !isPaused;
+    pauseButton.textContent = "Continue";
 }
 
 
