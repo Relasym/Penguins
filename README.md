@@ -24,4 +24,4 @@ todo:
   - [ ] pausemenu triggering for a frame or two, draw issue? (set menu invisible while in background?)
   - [x] spacebar triggers pause menu after it has been opened once
   - [ ] debug stattrackers too close in small windows
-  - [ ] framerate inconsistent (somehow)
+  - [ ] framerate inconsistent (double frames on 144hz)
