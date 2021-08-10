@@ -239,7 +239,7 @@ class Fish extends Actor {
         }
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(fishImage, this.x, this.y, this.width, this.height);
+        context.drawImage(fishImage, this.x-camera.x, this.y-camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
     }
@@ -271,7 +271,7 @@ class Shark extends Actor {
         }
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(sharkImage, this.x, this.y, this.width, this.height);
+        context.drawImage(sharkImage, this.x-camera.x, this.y-camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
     }
@@ -301,6 +301,11 @@ class Player extends MovingRectangle {
     }
     update() {
         super.update()
+
+
+        camera.x=this.x-400+this.width/2;
+        camera.y=this.y-300+this.height/2;
+
         // this.velocity = { x: 0, y: 0 }
         //control
         if (currentInputs.has("w")) {
@@ -385,11 +390,12 @@ class Player extends MovingRectangle {
         reset transformation matrix
         */
 
-        context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        context.fillRect(this.x-camera.x, this.y-camera.y, this.width, this.height);
+        context.translate(this.x + this.width / 2-camera.x, this.y + this.height / 2-camera.y);
         context.rotate(this.rotation);
-        context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(penguinImage, 55, 0, 115, 200, this.x, this.y, this.width, this.height);
+        context.translate(-1 * (this.x + this.width / 2-camera.x), -1 * (this.y + this.height / 2-camera.y));
+        
+        context.drawImage(penguinImage, 55, 0, 115, 200, this.x-camera.x, this.y-camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
