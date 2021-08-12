@@ -46,7 +46,7 @@ class Circle extends BasicObject {
     }
     draw() {
         context.beginPath();
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+        context.arc(this.x - camera.x, this.y - camera.y, this.radius, 0, Math.PI * 2, false);
         if (this.isDestroying) {
             let color = [...this.color._rgba];
             color[3] *= this.destructionProgress;
@@ -85,6 +85,7 @@ class VisualMovingCircle extends Circle {
     affectedByGravity = false;
     isUpdateable = true;
     velocity = { x: 0, y: 0 };
+    hasCollision = false;
     constructor(x, y, radius, color) {
         super(x, y, radius, color);
     }
@@ -157,7 +158,7 @@ class Rectangle extends BasicObject {
         context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(this.rotation);
         context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        context.fillRect(this.x, this.y, this.width, this.height);
+        context.fillRect(this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
     update() {
@@ -232,14 +233,14 @@ class Fish extends Actor {
 
         context.save();
         context.globalAlpha = this.destructionProgress;
-        context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        context.rotate(this.rotation);
-        if (this.velocity.x < 0) {
-            context.scale(-1, 1);
-        }
-        context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
+        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        // context.rotate(this.rotation);
+        // if (this.velocity.x < 0) {
+        //     context.scale(-1, 1);
+        // }
+        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(fishImage, this.x-camera.x, this.y-camera.y, this.width, this.height);
+        context.drawImage(fishImage, this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
     }
@@ -264,23 +265,36 @@ class Shark extends Actor {
 
         context.save();
         context.globalAlpha = this.destructionProgress;
-        context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        context.rotate(this.rotation);
-        if (this.velocity.x > 0) {
-            context.scale(-1, 1);
-        }
-        context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
+        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
+        // context.rotate(this.rotation);
+        // if (this.velocity.x > 0) {
+        //     context.scale(-1, 1);
+        // }
+        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.drawImage(sharkImage, this.x-camera.x, this.y-camera.y, this.width, this.height);
+        context.drawImage(sharkImage, this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
     }
 
     update() {
         super.update();
-        if (objectsByFaction[1].length > 0) {
-            this.velocity.x += (objectsByFaction[1][0].x - this.x) / 50;
-            this.velocity.y += (objectsByFaction[1][0].y - this.y) / 50;
+        
+
+        if (this.y < 0) {
+            this.affectedByGravity = true;
+        } else {
+            this.affectedByGravity = false;
+            if (objectsByFaction[1].length > 0) {
+                this.velocity.x += (objectsByFaction[1][0].x - this.x) / 50;
+                this.velocity.y += (objectsByFaction[1][0].y - this.y) / 50;
+            }
+        }
+
+        //friction
+        if (this.y > 0) {
+            this.velocity.x *= 0.995;
+            this.velocity.y *= 0.995;
         }
 
     }
@@ -303,37 +317,48 @@ class Player extends MovingRectangle {
         super.update()
 
 
-        camera.x=this.x-400+this.width/2;
-        camera.y=this.y-300+this.height/2;
+        camera.x = this.x - 400 + this.width / 2;
+        camera.y = this.y - 300 + this.height / 2;
 
         // this.velocity = { x: 0, y: 0 }
         //control
-        if (currentInputs.has("w")) {
-            this.velocity.x += this.speed * Math.sin(this.rotation)
-            this.velocity.y -= this.speed * Math.cos(this.rotation)
-        }
-        if (currentInputs.has("s")) {
-            this.velocity.x -= this.speed * Math.sin(this.rotation)
-            this.velocity.y += this.speed * Math.cos(this.rotation)
-        }
-        if (currentInputs.has("a")) { this.rotation -= 0.1; }
-        if (currentInputs.has("d")) { this.rotation += 0.1; }
-        if (currentInputs.has(" ")) {
-            let currentTime = performance.now()
-            if (currentTime > this.lastFire + this.refireDelay) {
-                let projectile = new Projectile(this.x + this.width / 2, this.y + this.height / 2, 5, this.color)
-                projectile.velocity.x = 0.5 * this.velocity.x + this.projectileSpeed * Math.sin(this.rotation);
-                projectile.velocity.y = 0.5 * this.velocity.y + -1 * this.projectileSpeed * Math.cos(this.rotation);
-                projectile.faction = this.faction;
-                projectile.register();
-                this.lastFire = currentTime;
+        if (this.y < 0) {
+            this.affectedByGravity = true;
+            if (currentInputs.has("a")) { this.rotation -= 0.1; }
+            if (currentInputs.has("d")) { this.rotation += 0.1; }
+        } else {
+            this.affectedByGravity = false;
+            if (currentInputs.has("w")) {
+                this.velocity.x += this.speed * Math.sin(this.rotation)
+                this.velocity.y -= this.speed * Math.cos(this.rotation)
             }
+            if (currentInputs.has("s")) {
+                this.velocity.x -= this.speed * Math.sin(this.rotation)
+                this.velocity.y += this.speed * Math.cos(this.rotation)
+            }
+            if (currentInputs.has("a")) { this.rotation -= 0.1; }
+            if (currentInputs.has("d")) { this.rotation += 0.1; }
+            if (currentInputs.has(" ")) {
+                let currentTime = performance.now()
+                if (currentTime > this.lastFire + this.refireDelay) {
+                    let projectile = new Projectile(this.x + this.width / 2, this.y + this.height / 2, 5, this.color)
+                    projectile.velocity.x = 0.5 * this.velocity.x + this.projectileSpeed * Math.sin(this.rotation);
+                    projectile.velocity.y = 0.5 * this.velocity.y + -1 * this.projectileSpeed * Math.cos(this.rotation);
+                    projectile.faction = this.faction;
+                    projectile.register();
+                    this.lastFire = currentTime;
+                }
+
+            }
+
+
+
 
         }
 
         //bubbles
         if (Math.random() < vectorLength(this.velocity.x, this.velocity.y) / 200) {
-            let bubble = new VisualMovingCircle(this.x + this.width / 2, this.y + this.height, 5, "rgba(150,200,200,1)");
+            let bubble = new VisualMovingCircle(this.x + this.width / 2, this.y + this.height / 2, 5, "rgba(230,230,220,1)");
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
             bubble.velocity.y = this.velocity.y * 0.5 + 50 * (Math.random() - 0.5);
@@ -352,6 +377,14 @@ class Player extends MovingRectangle {
         // this.velocity.x = Math.max(this.velocity.x, -1 * this.maxspeed)
         // this.velocity.y = Math.min(this.velocity.y, this.maxspeed)
         // this.velocity.y = Math.max(this.velocity.y, -1 * this.maxspeed)
+
+
+        //friction
+        if (this.y > 0) {
+            this.velocity.x *= 0.998;
+            this.velocity.y *= 0.998;
+        }
+
 
         //movement
         this.x += this.velocity.x * currentFrameDuration / 1000;
@@ -390,12 +423,12 @@ class Player extends MovingRectangle {
         reset transformation matrix
         */
 
-        context.fillRect(this.x-camera.x, this.y-camera.y, this.width, this.height);
-        context.translate(this.x + this.width / 2-camera.x, this.y + this.height / 2-camera.y);
+        // context.fillRect(this.x, this.y, this.width, this.height);
+        context.translate(this.x + this.width / 2 - camera.x, this.y + this.height / 2 - camera.y);
         context.rotate(this.rotation);
-        context.translate(-1 * (this.x + this.width / 2-camera.x), -1 * (this.y + this.height / 2-camera.y));
-        
-        context.drawImage(penguinImage, 55, 0, 115, 200, this.x-camera.x, this.y-camera.y, this.width, this.height);
+        context.translate(-1 * (this.x + this.width / 2 - camera.x), -1 * (this.y + this.height / 2 - camera.y));
+
+        context.drawImage(penguinImage, 55, 0, 115, 200, this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
