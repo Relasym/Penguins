@@ -1,11 +1,12 @@
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const startTime = performance.now();
-const gravity = 0.2; // units/s^2
+const gravity = 500; // units/s^2
 const bounceRatio = 0.8;
 const currentInputs = new Set();
 const destructionTime = 300; //ms
-const oceanColour = "rgba(102,204,255,1)";
+const oceanColour = "rgba(124, 233, 252)";
+const skyColour = "rgba(204, 233, 252)";
 camera = { x: 0, y: 0 };
 
 
@@ -57,6 +58,19 @@ function start() {
     $(".statlist .stat9 .type").html("Fish eaten: ");
     $(".statlist .stat10 .type").html("frametime: ");
 
+    //create Sky
+    for (i = 0; i < 1; i++) {
+        x = -1000000;
+        y = -10000
+        width = 2000000;
+        height = 10000;
+        speed = 100;
+        color = new jQuery.Color(skyColour);
+        sky = new Rectangle(x, y, width, height, color);
+        sky.faction = 0;
+        sky.register();
+    }
+
     //create Fish
     for (i = 0; i < 10; i++) {
         x = canvas.width * Math.random();
@@ -76,7 +90,7 @@ function start() {
     }
 
     //create Shark
-    for (i = 0; i < 1; i++) {
+    for (i = 0; i < 3; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
         width = 100;
@@ -93,19 +107,23 @@ function start() {
         shark.register();
     }
 
+    
+
+
+
     // create border walls
-    wallN = new TerrainRectangle(-100, -90, canvas.width + 200, 100, new jQuery.Color("blue"));
-    wallN.faction = 0;
-    wallN.register();
-    wallE = new TerrainRectangle(canvas.width - 10, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
-    wallE.faction = 0;
-    wallE.register();
-    wallS = new TerrainRectangle(-100, canvas.height - 10, canvas.width + 200, 100, new jQuery.Color("blue"));
-    wallS.faction = 0;
-    wallS.register();
-    wallW = new TerrainRectangle(-90, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
-    wallW.faction = 0;
-    wallW.register();
+    // wallN = new TerrainRectangle(-100, -90, canvas.width + 200, 100, new jQuery.Color("blue"));
+    // wallN.faction = 0;
+    // wallN.register();
+    // wallE = new TerrainRectangle(canvas.width - 10, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
+    // wallE.faction = 0;
+    // wallE.register();
+    // wallS = new TerrainRectangle(-100, canvas.height - 10, canvas.width + 200, 100, new jQuery.Color("blue"));
+    // wallS.faction = 0;
+    // wallS.register();
+    // wallW = new TerrainRectangle(-90, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
+    // wallW.faction = 0;
+    // wallW.register();
     // wallCenter = new TerrainRectangle(400, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
     // wallCenter.faction = 0;
     // wallCenter.register();
@@ -137,9 +155,30 @@ function mainLoop() {
 
 
             //reset frame
-            context.fillStyle = oceanColour;
+            // context.fillStyle = oceanColour;
+
+            //depth-dependent color calculation
+            let color = [124, 233, 252];
+            let remainderColor = color.map(color => 255 - color);
+            // console.log(remainderColor);
+            let newcolor = color.map(color => {
+                let depth = Math.max(0, camera.y);
+                let maxdepth = 2500;
+                let remainingdepth = maxdepth - depth;
+                color = color * remainingdepth / maxdepth;
+                return color;
+            });
+            context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
+
+
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.fillRect(0, 0, canvas.width, canvas.height);
+
+            //"sky"
+            context.fillStyle = `rgba(189,246,254,1)`;
+            context.fillRect(-1000, -1000, 2000 + canvas.width, 1000);
+
+
 
             //update objects
             updateableObjects.forEach(object => {
@@ -150,11 +189,11 @@ function mainLoop() {
             handleCollisions();
 
             //cleanup offscreen objects
-            drawableObjects.forEach(object => {
-                if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
-                    object.deregister();
-                }
-            })
+            // drawableObjects.forEach(object => {
+            //     if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
+            //         object.deregister();
+            //     }
+            // })
 
             //draw objects
             drawableObjects.forEach(object => {
@@ -247,6 +286,11 @@ function handleCollisions() {
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Fish") {
                                 object2.startDestruction();
                                 fishcounter++;
+                            }
+                            if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
+                                // object1.startDestruction();
+                                // togglePause();
+                                // $('.pausemenu h2').html("Game Over!");
                             }
                         }
                     }
