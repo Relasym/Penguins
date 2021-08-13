@@ -26,6 +26,7 @@ todo:
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] debug stattrackers too close in small windows
   - [ ] framerate inconsistent (double frames on 144hz)
+  - [ ] Sharks get way to fast (acceleration unbounded)
 - Bugs, fixed
   - [x] spacebar triggers pause menu after it has been opened once
 - Bugs, no longer reproducable
