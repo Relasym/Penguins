@@ -235,20 +235,33 @@ class Fish extends Actor {
         context.globalAlpha = this.destructionProgress;
         // context.translate(this.x + this.width / 2, this.y + this.height / 2);
         // context.rotate(this.rotation);
+        
+        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
+        // context.fillRect(this.x, this.y, this.width, this.height);
         // if (this.velocity.x < 0) {
         //     context.scale(-1, 1);
         // }
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
         context.drawImage(fishImage, this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
+    }
+
+    update() {
+        super.update();
+
+        if (this.y < 0) {
+            this.affectedByGravity = true;
+        } else {
+            this.affectedByGravity = false;
+        }
+
     }
 
 }
 
 class Shark extends Actor {
     image = sharkImage;
+    sharkAccelerationFactor=1; // acceleration per distance from player per second
 
     constructor(x, y, width, height, color) {
         super(x, y, width, height, color)
@@ -267,11 +280,12 @@ class Shark extends Actor {
         context.globalAlpha = this.destructionProgress;
         // context.translate(this.x + this.width / 2, this.y + this.height / 2);
         // context.rotate(this.rotation);
+        
+        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
+        // context.fillRect(this.x, this.y, this.width, this.height);
         // if (this.velocity.x > 0) {
         //     context.scale(-1, 1);
         // }
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
         context.drawImage(sharkImage, this.x - camera.x, this.y - camera.y, this.width, this.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
         context.restore();
@@ -279,22 +293,22 @@ class Shark extends Actor {
 
     update() {
         super.update();
-        
+
 
         if (this.y < 0) {
             this.affectedByGravity = true;
         } else {
             this.affectedByGravity = false;
             if (objectsByFaction[1].length > 0) {
-                this.velocity.x += (objectsByFaction[1][0].x - this.x) / 50;
-                this.velocity.y += (objectsByFaction[1][0].y - this.y) / 50;
+                this.velocity.x += (objectsByFaction[1][0].x - this.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (objectsByFaction[1][0].y - this.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
 
         //friction
         if (this.y > 0) {
-            this.velocity.x *= 0.995;
-            this.velocity.y *= 0.995;
+            this.velocity.x *= 0.99;
+            this.velocity.y *= 0.99;
         }
 
     }
@@ -370,14 +384,8 @@ class Player extends MovingRectangle {
 
         //maximum "speed"
         if (vectorLength(this.velocity.x, this.velocity.y) > this.maxspeed) {
-            this.velocity.x *= this.maxspeed / vectorLength(this.velocity.x, this.velocity.y);
-            this.velocity.y *= this.maxspeed / vectorLength(this.velocity.x, this.velocity.y);
+            this.velocity = normalizeVector(this.velocity);
         }
-        // this.velocity.x = Math.min(this.velocity.x, this.maxspeed)
-        // this.velocity.x = Math.max(this.velocity.x, -1 * this.maxspeed)
-        // this.velocity.y = Math.min(this.velocity.y, this.maxspeed)
-        // this.velocity.y = Math.max(this.velocity.y, -1 * this.maxspeed)
-
 
         //friction
         if (this.y > 0) {
@@ -390,12 +398,6 @@ class Player extends MovingRectangle {
         this.x += this.velocity.x * currentFrameDuration / 1000;
         this.y += this.velocity.y * currentFrameDuration / 1000;
 
-        //"ground"
-        // if (this.y > canvas.height - this.height) {
-        //     this.y = canvas.height - this.height;
-        //     this.velocity.y = 0;
-        //     this.velocity.x = 0;
-        // }
     }
     register() {
         super.register();
