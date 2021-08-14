@@ -30,10 +30,11 @@ todo:
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] debug stattrackers too close in small windows
   - [ ] framerate inconsistent (double frames on 144hz)
-  - [ ] flipping images when drawing completely screws camera???
+  - [ ] flipping images when drawing completely screws camera??
 - Bugs, fixed
   - [x] Sharks get way to fast (acceleration unbounded) (added more friction)
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
-- Bugs, no longer reproducable
+  - [x] flying fish
+- Bugs, no longer reproducible
   - [ ] fishcounter off sometimes, events not triggering correctly?
   - [ ] pausemenu triggering for a frame or two, draw issue? (set menu invisible while in background?)
