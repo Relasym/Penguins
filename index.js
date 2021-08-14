@@ -9,6 +9,9 @@ const oceanColour = "rgba(124, 233, 252)";
 const skyColour = "rgba(204, 233, 252)";
 camera = { x: 0, y: 0 };
 
+const fishSpawnDelay = 1000;
+const sharkSpawnDelay = 10000;
+
 
 simulationFPS = 144; //frames per second
 simulationTPF = 1000 / simulationFPS; //ms
@@ -43,6 +46,9 @@ for (i = 0; i < factionAmount; i++) {
 }
 
 let lastFrameTime = 0;
+totalRuntime = 0;
+fishSpawnTimer = 0;
+sharkSpawnTimer = 0;
 
 
 function start() {
@@ -75,8 +81,9 @@ function start() {
     for (i = 0; i < 10; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
-        width = 50;
-        height = 20;
+        let scale = Math.random() / 2 + 0.5;
+        width = 50 * scale;
+        height = 20 * scale;
         speed = 100;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
@@ -90,11 +97,12 @@ function start() {
     }
 
     //create Shark
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 1; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
-        width = 100;
-        height = 40;
+        let scale = Math.random() / 2 + 0.5;
+        width = 100 * scale;
+        height = 40 * scale;
         speed = 100;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
@@ -106,9 +114,6 @@ function start() {
         shark.faction = 3;
         shark.register();
     }
-
-    
-
 
 
     // create border walls
@@ -129,7 +134,7 @@ function start() {
     // wallCenter.register();
 
     //create player last so its drawn last, great solution right here
-    player = new Player(300, 300, 30, 50, new jQuery.Color("white"), 3); //59/100
+    player = new Player(300, 300, 30, 50, new jQuery.Color("white"), 3);
     player.hasCollision = true;
     player.faction = 1;
     player.affectedByGravity = false;
@@ -147,21 +152,25 @@ function start() {
 function mainLoop() {
     //recursion
     requestAnimationFrame(mainLoop);
-
+    
 
     if (!isPaused) {
         currentFrameDuration = performance.now() - lastFrameTime;
         if (currentFrameDuration > simulationTPF) {
+            let animationStartTime=performance.now();
 
+            totalRuntime += currentFrameDuration;
+            fishSpawnTimer += currentFrameDuration;
+            sharkSpawnTimer += currentFrameDuration;
 
             //reset frame
-            // context.fillStyle = oceanColour;
+            context.clearRect(0, 0, canvas.width, canvas.height);
 
             //depth-dependent color calculation
             let color = [124, 233, 252];
-            let remainderColor = color.map(color => 255 - color);
+            let remainderColor = color.map((color) => { 255 - color });
             // console.log(remainderColor);
-            let newcolor = color.map(color => {
+            let newcolor = color.map((color) => {
                 let depth = Math.max(0, camera.y);
                 let maxdepth = 2500;
                 let remainingdepth = maxdepth - depth;
@@ -169,21 +178,16 @@ function mainLoop() {
                 return color;
             });
             context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
-
-
-            context.clearRect(0, 0, canvas.width, canvas.height);
             context.fillRect(0, 0, canvas.width, canvas.height);
 
             //"sky"
             context.fillStyle = `rgba(189,246,254,1)`;
             context.fillRect(-1000, -1000, 2000 + canvas.width, 1000);
 
-
-
             //update objects
-            updateableObjects.forEach(object => {
+            updateableObjects.forEach((object) => {
                 object.update();
-            })
+            });
 
             //collision testing after updating but before drawing
             handleCollisions();
@@ -195,10 +199,69 @@ function mainLoop() {
             //     }
             // })
 
+            //add new objects
+
+            if (fishSpawnTimer > fishSpawnDelay) {
+                fishSpawnTimer -= fishSpawnDelay;
+                //add new Fish
+                for (i = 0; i < 2; i++) {
+                    x = canvas.width * Math.random();
+                    y = canvas.height * Math.random();
+                    let scale = Math.random() / 2 + 0.5;
+                    width = 50 * scale;
+                    height = 20 * scale;
+                    speed = 100;
+                    xvel = speed * (Math.random() - 0.5);
+                    yvel = speed * (Math.random() - 0.5);
+                    // color = new jQuery.Color("rgba(102,204,255,1)");
+                    color = new jQuery.Color("rgba(0,0,0,1)");
+                    fish = new Fish(x, y, width, height, color, true);
+                    fish.velocity.x = xvel;
+                    fish.velocity.y = yvel;
+                    fish.faction = 2;
+                    fish.register();
+                }
+            }
+
+            if (sharkSpawnTimer > sharkSpawnDelay) {
+                sharkSpawnTimer -= sharkSpawnDelay;
+                //add new Shark(s)
+                for (i = 0; i < 1; i++) {
+                    x = canvas.width * Math.random();
+                    y = canvas.height * Math.random();
+                    let scale = Math.random() / 2 + 0.5;
+                    width = 100 * scale;
+                    height = 40 * scale;
+                    speed = 100;
+                    xvel = speed * (Math.random() - 0.5);
+                    yvel = speed * (Math.random() - 0.5);
+                    // color = new jQuery.Color("rgba(102,204,255,1)");
+                    color = new jQuery.Color("rgba(0,0,0,1)");
+                    shark = new Shark(x, y, width, height, color, true);
+                    shark.velocity.x = xvel;
+                    shark.velocity.y = yvel;
+                    shark.faction = 3;
+                    shark.register();
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             //draw objects
-            drawableObjects.forEach(object => {
+            drawableObjects.forEach((object) => {
                 object.draw();
-            })
+            });
 
 
             //update stats
@@ -212,6 +275,9 @@ function mainLoop() {
             $(".fishcounter").html(fishcounter);
 
             lastFrameTime = performance.now();
+
+            let animationEndTime=performance.now();
+            console.log(animationEndTime-animationStartTime);
         }
 
     }
@@ -264,7 +330,8 @@ function handleCollisions() {
             }
         }
         //projectile collides with faction 0 object (terrain)
-        if (i != 0) { //TODO let faction 0 projectiles collide with terrain?
+        if (i != 0) {
+            //TODO let faction 0 projectiles collide with terrain?
             projectilesByFaction[i].forEach((projectile) => {
                 objectsByFaction[0].forEach((object) => {
                     if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
@@ -282,15 +349,14 @@ function handleCollisions() {
                 for (object1 of objectsByFaction[i]) {
                     for (object2 of objectsByFaction[j]) {
                         if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
-                            // TODO Collisions between objects from 
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Fish") {
                                 object2.startDestruction();
                                 fishcounter++;
                             }
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
-                                // object1.startDestruction();
-                                // togglePause();
-                                // $('.pausemenu h2').html("Game Over!");
+                                object1.startDestruction();
+                                togglePause();
+                                $('.pausemenu h2').html("Game Over!");
                             }
                         }
                     }
@@ -361,6 +427,10 @@ function collisionCircleCircle(circle1, circle2) {
 function vectorLength(x, y) {
     return Math.sqrt(x * x + y * y)
 }
+function normalizeVector({ x, y }) {
+    let length = vectorLength(x, y);
+    return { x: x / length, y: y / length };
+}
 function normalize(vector) {
     length = vectorLength(vector.x, vector.y)
     return { x: vector.x / length, y: vector.y / length }
@@ -368,17 +438,17 @@ function normalize(vector) {
 
 
 /* logging pressed keys */
-document.addEventListener('keydown', keypress => {
+document.addEventListener('keydown', (keypress) => {
     currentInputs.add(keypress.key);
     if (keypress.key == "Escape") {
         togglePause();
     }
     console.log(currentInputs)
 });
-document.addEventListener('keyup', keypress => {
+document.addEventListener('keyup', (keypress) => {
     currentInputs.delete(keypress.key);
 });
-document.addEventListener('mousedown', btn => {
+document.addEventListener('mousedown', (btn) => {
     currentInputs.add("MB" + btn.button)
     console.log(currentInputs)
     // console.log(btn)
@@ -387,7 +457,7 @@ document.addEventListener('mousedown', btn => {
     mouseY = btn.clientY - canvas.offsetTop;
     // console.log(mouseX + " " + mouseY)
 });
-document.addEventListener('mouseup', btn => {
+document.addEventListener('mouseup', (btn) => {
     currentInputs.delete("MB" + btn.button)
 });
 pauseButton.addEventListener("click", function () {
@@ -396,4 +466,3 @@ pauseButton.addEventListener("click", function () {
 })
 
 start()
-
