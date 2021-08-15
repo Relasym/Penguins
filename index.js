@@ -7,18 +7,18 @@ const currentInputs = new Set();
 const destructionTime = 300; //ms
 const oceanColour = "rgba(124, 233, 252)";
 const skyColour = "rgba(204, 233, 252)";
-camera = { x: 0, y: 0 };
+camera = { x: 0, y: 0 }; //set to player position + screensize offset while running
 
 const fishSpawnDelay = 1000;
 const sharkSpawnDelay = 10000;
 
 
-simulationFPS = 144; //frames per second
+simulationFPS = 60; //frames per second
 simulationTPF = 1000 / simulationFPS; //ms
 currentFrameDuration = 0;
 
 
-fishcounter = 0;
+fishcounter = 0; //fish eaten
 isPaused = false;
 
 const penguinImage = document.getElementsByClassName("penguin").item(0);
@@ -37,7 +37,7 @@ collisionObjects = [];
 terrainObjects = [];
 projectileObjects = [];
 
-const factionAmount = 10; //realistically no more than 3
+const factionAmount = 10; //realistically no more than 3 (0: terrain, 1: player, rest: other)
 const projectilesByFaction = []
 const objectsByFaction = []
 for (i = 0; i < factionAmount; i++) {
@@ -47,8 +47,8 @@ for (i = 0; i < factionAmount; i++) {
 
 let lastFrameTime = 0;
 totalRuntime = 0;
-fishSpawnTimer = 0;
-sharkSpawnTimer = 0;
+fishSpawnTimer = 0; //time since last fish spawn
+sharkSpawnTimer = 0; //time since last shark spawn
 
 
 function start() {
@@ -65,6 +65,7 @@ function start() {
     $(".statlist .stat10 .type").html("frametime: ");
 
     //create Sky
+    //todo: this should be an object without collision
     for (i = 0; i < 1; i++) {
         x = -1000000;
         y = -10000
@@ -97,6 +98,7 @@ function start() {
     }
 
     //create Shark
+    //todo: should not spawn on or directly ahead of player
     for (i = 0; i < 1; i++) {
         x = canvas.width * Math.random();
         y = canvas.height * Math.random();
@@ -150,7 +152,7 @@ function start() {
 }
 
 function mainLoop() {
-    //recursion
+    //draw frame & callback
     requestAnimationFrame(mainLoop);
     
 
@@ -168,8 +170,6 @@ function mainLoop() {
 
             //depth-dependent color calculation
             let color = [124, 233, 252];
-            let remainderColor = color.map((color) => { 255 - color });
-            // console.log(remainderColor);
             let newcolor = color.map((color) => {
                 let depth = Math.max(0, camera.y);
                 let maxdepth = 2500;
@@ -181,8 +181,6 @@ function mainLoop() {
             context.fillRect(0, 0, canvas.width, canvas.height);
 
             //"sky"
-            context.fillStyle = `rgba(189,246,254,1)`;
-            context.fillRect(-1000, -1000, 2000 + canvas.width, 1000);
 
             //update objects
             updateableObjects.forEach((object) => {
@@ -245,24 +243,10 @@ function mainLoop() {
                 }
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
             //draw objects
             drawableObjects.forEach((object) => {
                 object.draw();
             });
-
 
             //update stats
             $(".statlist .stat1 .value").html(allObjects.length);
@@ -368,6 +352,7 @@ function handleCollisions() {
             for (object2 of objectsByFaction[0]) {
                 if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
                     object1.velocity = { x: 0, y: 0 };
+                    //object colliding with terrain stop completely
                 }
             }
         }
@@ -379,7 +364,6 @@ function handleCollisions() {
 }
 
 function togglePause() {
-    console.log("pause/unpause");
     pauseMenu.classList.toggle("visible");
     lastFrameTime = performance.now();
     isPaused = !isPaused;
@@ -398,7 +382,7 @@ function areObjectsColliding(object1, object2) {
         }
     } else {
         if (type2 = "rectangle") {
-            return collisionRectangleCircle(object2, object1); //<- IMPORTANT
+            return collisionRectangleCircle(object2, object1); //<- IMPORTANT todo order should be irrelevant, fix this
         } else {
             return collisionCircleCircle(object1, object2);
         }
@@ -412,6 +396,7 @@ function collisionRectangleRectangle(rectangle1, rectangle2) {
         rectangle1.y + rectangle1.height > rectangle2.y)
 }
 function collisionRectangleCircle(rectangle, circle) {
+    //order should be irrelevant, FIX!
     xborder = circle.x
     yborder = circle.y
     if (circle.x < rectangle.x) xborder = rectangle.x
@@ -448,11 +433,10 @@ document.addEventListener('keydown', (keypress) => {
 document.addEventListener('keyup', (keypress) => {
     currentInputs.delete(keypress.key);
 });
+
 document.addEventListener('mousedown', (btn) => {
     currentInputs.add("MB" + btn.button)
     console.log(currentInputs)
-    // console.log(btn)
-    // console.log(canvas)
     mouseX = btn.clientX - canvas.offsetLeft;
     mouseY = btn.clientY - canvas.offsetTop;
     // console.log(mouseX + " " + mouseY)
@@ -460,9 +444,10 @@ document.addEventListener('mousedown', (btn) => {
 document.addEventListener('mouseup', (btn) => {
     currentInputs.delete("MB" + btn.button)
 });
+
 pauseButton.addEventListener("click", function () {
     togglePause();
-    this.blur();
+    this.blur(); //unfocus so spacebar can't trigger pause
 })
 
 start()
