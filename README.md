@@ -7,7 +7,7 @@ todo:
   - [x] decouple simrate from framerate (still capped by framerate)
   - [x] pause function
   - [x] menu
-  - [ ] remove jQuery?
+  - [ ] remove jQuery? (using jQuery Color currently)
   - [ ] separate game logic and animate functions
 - Collision and Drawing
   - [ ] implement polygon-polygon collision
@@ -30,7 +30,7 @@ todo:
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] debug stattrackers too close in small windows
   - [ ] framerate inconsistent (double frames on 144hz)
-  - [ ] flipping images when drawing completely screws camera??
+  - [ ] flipping images when drawing completely screws camera (cause by flipping around wrong point, also causes teleporting sharks)
 - Bugs, fixed
   - [x] Sharks get way to fast (acceleration unbounded) (added more friction)
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
