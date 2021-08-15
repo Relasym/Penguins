@@ -1,3 +1,6 @@
+//really, this needs to be completely restructured & generalized
+//remove jQuery color while we're at it
+
 class BasicObject {
     faction;
     hasCollision = false;
@@ -72,7 +75,7 @@ class MovingCircle extends Circle {
         if (this.affectedByGravity) {
             this.velocity.y += gravity * currentFrameDuration / 1000;
         }
-        if (!this.isDestroying) {
+        if (!this.isDestroying) { //todo decide if objects should move while destroying
             this.x += this.velocity.x * currentFrameDuration / 1000;
             this.y += this.velocity.y * currentFrameDuration / 1000;
         }
@@ -317,10 +320,10 @@ class Shark extends Actor {
 
 
 class Player extends MovingRectangle {
-    maxspeed = 5000;
+    maxspeed = 5000; //units (currently ==pixels) per second
     refireDelay = 50; //ms
     lastFire;
-    projectileSpeed = 10;
+    projectileSpeed = 10; //old, needs update
 
     constructor(x, y, width, height, color, speed) {
         super(x, y, width, height, color);
@@ -331,6 +334,7 @@ class Player extends MovingRectangle {
         super.update()
 
 
+        //todo remove this hack
         camera.x = this.x - 400 + this.width / 2;
         camera.y = this.y - 300 + this.height / 2;
 
@@ -370,7 +374,7 @@ class Player extends MovingRectangle {
 
         }
 
-        //bubbles
+        //create bubbles
         if (Math.random() < vectorLength(this.velocity.x, this.velocity.y) / 200) {
             let bubble = new VisualMovingCircle(this.x + this.width / 2, this.y + this.height / 2, 5, "rgba(230,230,220,1)");
             bubble.faction = this.faction;
@@ -382,7 +386,7 @@ class Player extends MovingRectangle {
         }
 
 
-        //maximum "speed"
+        //maximum speed
         if (vectorLength(this.velocity.x, this.velocity.y) > this.maxspeed) {
             this.velocity = normalizeVector(this.velocity);
         }
