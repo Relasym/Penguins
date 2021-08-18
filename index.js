@@ -73,7 +73,7 @@ function start() {
         height = 10000;
         speed = 100;
         color = new jQuery.Color(skyColour);
-        sky = new Rectangle(x, y, width, height, color);
+        sky = new DrawableObject({ x, y, width, height }, "rectangle", color);
         sky.faction = 0;
         sky.register();
     }
@@ -90,7 +90,7 @@ function start() {
         yvel = speed * (Math.random() - 0.5);
         // color = new jQuery.Color("rgba(102,204,255,1)");
         color = new jQuery.Color("rgba(0,0,0,1)");
-        fish = new Fish(x, y, width, height, color, true);
+        fish = new Fish({ x, y, width, height }, "rectangle", color);
         fish.velocity.x = xvel;
         fish.velocity.y = yvel;
         fish.faction = 2;
@@ -110,7 +110,7 @@ function start() {
         yvel = speed * (Math.random() - 0.5);
         // color = new jQuery.Color("rgba(102,204,255,1)");
         color = new jQuery.Color("rgba(0,0,0,1)");
-        shark = new Shark(x, y, width, height, color, true);
+        shark = new Shark({ x, y, width, height }, "rectangle", color);
         shark.velocity.x = xvel;
         shark.velocity.y = yvel;
         shark.faction = 3;
@@ -136,10 +136,12 @@ function start() {
     // wallCenter.register();
 
     //create player last so its drawn last, great solution right here
-    player = new Player(300, 300, 30, 50, new jQuery.Color("white"), 3);
+    player = new Player({ x: 300, y: 300, width: 30, height: 50 }, "rectangle", new jQuery.Color("white"), 3);
     player.hasCollision = true;
     player.faction = 1;
     player.affectedByGravity = false;
+    player.velocity.x=25;
+    player.velocity.y=25;
     player.register();
 
     //draw empty frame behind menu
@@ -154,12 +156,12 @@ function start() {
 function mainLoop() {
     //draw frame & callback
     requestAnimationFrame(mainLoop);
-    
+
 
     if (!isPaused) {
         currentFrameDuration = performance.now() - lastFrameTime;
         if (currentFrameDuration > simulationTPF) {
-            let animationStartTime=performance.now();
+            // let animationStartTime = performance.now();
 
             totalRuntime += currentFrameDuration;
             fishSpawnTimer += currentFrameDuration;
@@ -213,7 +215,7 @@ function mainLoop() {
                     yvel = speed * (Math.random() - 0.5);
                     // color = new jQuery.Color("rgba(102,204,255,1)");
                     color = new jQuery.Color("rgba(0,0,0,1)");
-                    fish = new Fish(x, y, width, height, color, true);
+                    fish = new Fish({ x, y, width, height }, "rectangle", color);
                     fish.velocity.x = xvel;
                     fish.velocity.y = yvel;
                     fish.faction = 2;
@@ -235,7 +237,7 @@ function mainLoop() {
                     yvel = speed * (Math.random() - 0.5);
                     // color = new jQuery.Color("rgba(102,204,255,1)");
                     color = new jQuery.Color("rgba(0,0,0,1)");
-                    shark = new Shark(x, y, width, height, color, true);
+                    shark = new Shark({ x, y, width, height }, "rectangle", color);
                     shark.velocity.x = xvel;
                     shark.velocity.y = yvel;
                     shark.faction = 3;
@@ -245,6 +247,7 @@ function mainLoop() {
 
             //draw objects
             drawableObjects.forEach((object) => {
+                // console.log(object);
                 object.draw();
             });
 
@@ -260,8 +263,8 @@ function mainLoop() {
 
             lastFrameTime = performance.now();
 
-            let animationEndTime=performance.now();
-            console.log(animationEndTime-animationStartTime);
+            // let animationEndTime = performance.now();
+            // console.log(animationEndTime - animationStartTime);
         }
 
     }
@@ -363,12 +366,7 @@ function handleCollisions() {
 
 }
 
-function togglePause() {
-    pauseMenu.classList.toggle("visible");
-    lastFrameTime = performance.now();
-    isPaused = !isPaused;
-    pauseButton.textContent = "Continue";
-}
+
 
 
 function areObjectsColliding(object1, object2) {
@@ -390,10 +388,10 @@ function areObjectsColliding(object1, object2) {
 }
 
 function collisionRectangleRectangle(rectangle1, rectangle2) {
-    return (rectangle1.x < rectangle2.x + rectangle2.width &&
-        rectangle1.x + rectangle1.width > rectangle2.x &&
-        rectangle1.y < rectangle2.y + rectangle2.height &&
-        rectangle1.y + rectangle1.height > rectangle2.y)
+    return (rectangle1.definition.x < rectangle2.definition.x + rectangle2.definition.width &&
+        rectangle1.definition.x + rectangle1.definition.width > rectangle2.definition.x &&
+        rectangle1.definition.y < rectangle2.definition.y + rectangle2.definition.height &&
+        rectangle1.definition.y + rectangle1.definition.height > rectangle2.definition.y)
 }
 function collisionRectangleCircle(rectangle, circle) {
     //order should be irrelevant, FIX!
@@ -428,7 +426,8 @@ document.addEventListener('keydown', (keypress) => {
     if (keypress.key == "Escape") {
         togglePause();
     }
-    console.log(currentInputs)
+    // console.log(currentInputs);
+    
 });
 document.addEventListener('keyup', (keypress) => {
     currentInputs.delete(keypress.key);
@@ -436,7 +435,7 @@ document.addEventListener('keyup', (keypress) => {
 
 document.addEventListener('mousedown', (btn) => {
     currentInputs.add("MB" + btn.button)
-    console.log(currentInputs)
+    // console.log(currentInputs)
     mouseX = btn.clientX - canvas.offsetLeft;
     mouseY = btn.clientY - canvas.offsetTop;
     // console.log(mouseX + " " + mouseY)
@@ -449,5 +448,14 @@ pauseButton.addEventListener("click", function () {
     togglePause();
     this.blur(); //unfocus so spacebar can't trigger pause
 })
+
+function togglePause() {
+    pauseMenu.classList.toggle("visible");
+    lastFrameTime = performance.now();
+    isPaused = !isPaused;
+    pauseButton.textContent = "Continue";
+    // console.log(objectsByFaction);
+    // console.log(camera);
+}
 
 start()
