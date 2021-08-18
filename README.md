@@ -17,8 +17,8 @@ todo:
   - [ ] apply depth color change to all objects, not just background
 - Levels
   - [x] add camera (possible issues with transformation matrix in rotateable objects?)
-  - [ ] REALLY need a object collection class to handle spawning etc., requires
-  - [ ] complete restructuring of classes calls
+  - [ ] REALLY need an object collection class to handle spawning etc., requires
+  - [ ] complete restructuring of class calls
   - [ ] change autodestruct of objects to use level boundary
   - [ ] add level boundary
 - Content
@@ -33,10 +33,11 @@ todo:
   - [ ] framerate inconsistent (double frames on 144hz)
   - [ ] flipping images when drawing completely screws camera (cause by flipping around wrong point, also causes teleporting sharks)
   - [ ] collision broken for everything except rectangles (add new class rework coordinates)
+  - [ ] very slow since class rework (21ms/frame), check for redundant code in classes
 - Bugs, fixed
   - [x] Sharks get way to fast (acceleration unbounded) (added more friction)
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
   - [x] flying fish
-- Bugs, no longer reproducible
+- Bugs, probably fixed (no longer reproducible)
   - [ ] fishcounter off sometimes, events not triggering correctly?
   - [ ] pausemenu triggering for a frame or two, draw issue? (set menu invisible while in background?)
