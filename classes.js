@@ -47,7 +47,7 @@ class DrawableObject extends BasicObject {
         super()
         this.definition = definition;
         this.type = type;
-        this.color = new jQuery.Color(color);
+        this.color = color;
     }
     draw() {
         if (this.type == "circle") {
@@ -55,11 +55,9 @@ class DrawableObject extends BasicObject {
             context.beginPath();
             context.arc(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.radius, 0, Math.PI * 2, false);
             if (this.isDestroying) {
-                let color = [...this.color._rgba];
-                color[3] *= this.destructionProgress;
-                context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a*this.destructionProgress})`;
             } else {
-                context.fillStyle = this.color;
+                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
             context.fill();
         }
@@ -68,9 +66,9 @@ class DrawableObject extends BasicObject {
             if (this.isDestroying) {
                 let color = [...this.color._rgba];
                 color[3] *= this.destructionProgress;
-                context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a*this.destructionProgress})`;
             } else {
-                context.fillStyle = this.color;
+                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
 
             context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
@@ -83,9 +81,6 @@ class DrawableObject extends BasicObject {
             context.setTransform(1, 0, 0, 1, 0, 0);
         }
 
-    }
-    update() {
-        super.update();
     }
 }
 
@@ -152,11 +147,9 @@ class Fish extends Actor {
 
     draw() {
         if (this.isDestroying) {
-            let color = [...this.color._rgba];
-            color[3] *= this.destructionProgress;
-            context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a*this.destructionProgress})`;
         } else {
-            context.fillStyle = this.color;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
         context.save();
@@ -185,6 +178,17 @@ class Fish extends Actor {
 
     }
 
+    startDestruction() {
+        super.startDestruction();
+        for (let object of objectsByFaction[this.faction]) {
+            let distance = vectorLength(object.definition.x-this.definition.x,object.definition.y-this.definition.y);
+            if(distance<200) {
+                object.velocity.x += (this.definition.x-object.definition.x)*-50/distance;
+                object.velocity.y += (this.definition.y-object.definition.y)*-50/distance;
+            }
+        }
+    }
+
 }
 
 class Shark extends Actor {
@@ -197,11 +201,9 @@ class Shark extends Actor {
 
     draw() {
         if (this.isDestroying) {
-            let color = [...this.color._rgba];
-            color[3] *= this.destructionProgress;
-            context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a*this.destructionProgress})`;
         } else {
-            context.fillStyle = this.color;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
         context.save();
@@ -221,7 +223,6 @@ class Shark extends Actor {
 
     update() {
         super.update();
-
 
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
@@ -249,6 +250,7 @@ class Player extends Actor {
     lastFire;
     projectileSpeed = 10; //old, needs update
     image=penguinImage;
+    allBubbleSpeed=300; //player speed at which a bubble is spawned every frame 
 
 
     constructor(definition, type, color, speed) {
@@ -258,7 +260,6 @@ class Player extends Actor {
     }
     update() {
         super.update()
-
 
         //todo remove this hack
         camera.x = this.definition.x - 400 + this.definition.width / 2;
@@ -285,7 +286,7 @@ class Player extends Actor {
             if (currentInputs.has(" ")) {
                 let currentTime = performance.now()
                 if (currentTime > this.lastFire + this.refireDelay) {
-                    let projectile = new Projectile(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2, 5, this.color)
+                    let projectile = new Projectile(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2, 5, {r:0,b:0,g:0,a:1} )
                     projectile.velocity.x = 0.5 * this.velocity.x + this.projectileSpeed * Math.sin(this.rotation);
                     projectile.velocity.y = 0.5 * this.velocity.y + -1 * this.projectileSpeed * Math.cos(this.rotation);
                     projectile.faction = this.faction;
@@ -298,8 +299,8 @@ class Player extends Actor {
         }
 
         //create bubbles
-        if (Math.random() < vectorLength(this.velocity.x, this.velocity.y) / 200) {
-            let bubble = new MovingObject({ x: this.definition.x + this.definition.width / 2, y: this.definition.y + this.definition.height / 2, radius: 5 }, "circle", "rgba(230,230,220,1)");
+        if (Math.random() < vectorLength(this.velocity.x, this.velocity.y) / this.allBubbleSpeed) {
+            let bubble = new MovingObject({ x: this.definition.x + this.definition.width / 2, y: this.definition.y + this.definition.height / 2, radius: 3 }, "circle",  {r:255,b:255,g:255,a:0.7} );
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
@@ -308,7 +309,6 @@ class Player extends Actor {
             bubble.register();
             bubble.startDestruction();
         }
-
 
         //maximum speed
         if (vectorLength(this.velocity.x, this.velocity.y) > this.maxspeed) {
@@ -321,7 +321,6 @@ class Player extends Actor {
             this.velocity.y *= 0.998;
         }
 
-
         //movement
         this.definition.x += this.velocity.x * currentFrameDuration / 1000;
         this.definition.y += this.velocity.y * currentFrameDuration / 1000;
@@ -329,11 +328,9 @@ class Player extends Actor {
     }
     draw() {
         if (this.isDestroying) {
-            let color = [...this.color._rgba];
-            color[3] *= this.destructionProgress;
-            context.fillStyle = `rgba(${color[0]},${color[1]},${color[2]},${color[3]})`;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a*this.destructionProgress})`;
         } else {
-            context.fillStyle = this.color;
+            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
         /*
@@ -353,7 +350,6 @@ class Player extends Actor {
         context.drawImage(penguinImage, 55, 0, 115, 200, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
         context.setTransform(1, 0, 0, 1, 0, 0);
     }
-
 
 }
 
