@@ -5,8 +5,8 @@ const gravity = 500; // units/s^2
 const bounceRatio = 0.8;
 const currentInputs = new Set();
 const destructionTime = 300; //ms
-const oceanColour = "rgba(124, 233, 252)";
-const skyColour = "rgba(204, 233, 252)";
+const oceanColour =  {r:124,g:233,b:252,a:1};
+const skyColour = {r:204,g:233,b:252,a:1};
 camera = { x: 0, y: 0 }; //set to player position + screensize offset while running
 
 const fishSpawnDelay = 1000;
@@ -53,16 +53,16 @@ sharkSpawnTimer = 0; //time since last shark spawn
 
 function start() {
     //html stat display, static part
-    $(".statlist .stat1 .type").html("allObjects: ");
-    $(".statlist .stat2 .type").html("drawableObjects: ");
-    $(".statlist .stat3 .type").html("updateableObjects: ");
-    $(".statlist .stat4 .type").html("collisionObjects: ");
-    $(".statlist .stat5 .type").html("terrainObjects: ");
-    $(".statlist .stat6").hide();
-    $(".statlist .stat7").hide();
-    $(".statlist .stat8").hide();
-    $(".statlist .stat9 .type").html("Fish eaten: ");
-    $(".statlist .stat10 .type").html("frametime: ");
+    document.getElementById("type1").textContent="allObjects: ";
+    document.getElementById("type2").textContent="drawableObjects: ";
+    document.getElementById("type3").textContent="updateableObjects: ";
+    document.getElementById("type4").textContent="collisionObjects: ";
+    document.getElementById("type5").textContent="terrainObjects: ";
+    document.getElementById("type6").textContent="";
+    document.getElementById("type7").textContent="";
+    document.getElementById("type8").textContent="";
+    document.getElementById("type9").textContent="Fish eaten: ";
+    document.getElementById("type10").textContent="Frametime: ";
 
     //create Sky
     //todo: this should be an object without collision
@@ -72,8 +72,9 @@ function start() {
         width = 2000000;
         height = 10000;
         speed = 100;
-        color = new jQuery.Color(skyColour);
+        color = skyColour;
         sky = new DrawableObject({ x, y, width, height }, "rectangle", color);
+        sky.hasCollision=false;
         sky.faction = 0;
         sky.register();
     }
@@ -88,8 +89,7 @@ function start() {
         speed = 100;
         xvel = speed * (Math.random() - 0.5);
         yvel = speed * (Math.random() - 0.5);
-        // color = new jQuery.Color("rgba(102,204,255,1)");
-        color = new jQuery.Color("rgba(0,0,0,1)");
+        color = {r:0,g:0,b:0,a:1};
         fish = new Fish({ x, y, width, height }, "rectangle", color);
         fish.velocity.x = xvel;
         fish.velocity.y = yvel;
@@ -99,44 +99,26 @@ function start() {
 
     //create Shark
     //todo: should not spawn on or directly ahead of player
-    for (i = 0; i < 1; i++) {
-        x = canvas.width * Math.random();
-        y = canvas.height * Math.random();
-        let scale = Math.random() / 2 + 0.5;
-        width = 100 * scale;
-        height = 40 * scale;
-        speed = 100;
-        xvel = speed * (Math.random() - 0.5);
-        yvel = speed * (Math.random() - 0.5);
-        // color = new jQuery.Color("rgba(102,204,255,1)");
-        color = new jQuery.Color("rgba(0,0,0,1)");
-        shark = new Shark({ x, y, width, height }, "rectangle", color);
-        shark.velocity.x = xvel;
-        shark.velocity.y = yvel;
-        shark.faction = 3;
-        shark.register();
-    }
-
-
-    // create border walls
-    // wallN = new TerrainRectangle(-100, -90, canvas.width + 200, 100, new jQuery.Color("blue"));
-    // wallN.faction = 0;
-    // wallN.register();
-    // wallE = new TerrainRectangle(canvas.width - 10, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
-    // wallE.faction = 0;
-    // wallE.register();
-    // wallS = new TerrainRectangle(-100, canvas.height - 10, canvas.width + 200, 100, new jQuery.Color("blue"));
-    // wallS.faction = 0;
-    // wallS.register();
-    // wallW = new TerrainRectangle(-90, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
-    // wallW.faction = 0;
-    // wallW.register();
-    // wallCenter = new TerrainRectangle(400, -100, 100, canvas.height + 200, new jQuery.Color("blue"));
-    // wallCenter.faction = 0;
-    // wallCenter.register();
+    // for (i = 0; i < 1; i++) {
+    //     x = canvas.width * Math.random();
+    //     y = canvas.height * Math.random();
+    //     let scale = Math.random() / 2 + 0.5;
+    //     width = 100 * scale;
+    //     height = 40 * scale;
+    //     speed = 100;
+    //     xvel = speed * (Math.random() - 0.5);
+    //     yvel = speed * (Math.random() - 0.5);
+    //     color = {r:0,g:0,b:0,a:1};
+    //     shark = new Shark({ x, y, width, height }, "rectangle", color);
+    //     shark.velocity.x = xvel;
+    //     shark.velocity.y = yvel;
+    //     shark.faction = 3;
+    //     shark.register();
+    // }
 
     //create player last so its drawn last, great solution right here
-    player = new Player({ x: 300, y: 300, width: 30, height: 50 }, "rectangle", new jQuery.Color("white"), 3);
+    color = {r:0,g:0,b:0,a:1};
+    player = new Player({ x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
     player.hasCollision = true;
     player.faction = 1;
     player.affectedByGravity = false;
@@ -145,7 +127,7 @@ function start() {
     player.register();
 
     //draw empty frame behind menu
-    context.fillStyle = oceanColour;
+    context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     togglePause();
@@ -156,7 +138,6 @@ function start() {
 function mainLoop() {
     //draw frame & callback
     requestAnimationFrame(mainLoop);
-
 
     if (!isPaused) {
         currentFrameDuration = performance.now() - lastFrameTime;
@@ -182,8 +163,6 @@ function mainLoop() {
             context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
             context.fillRect(0, 0, canvas.width, canvas.height);
 
-            //"sky"
-
             //update objects
             updateableObjects.forEach((object) => {
                 object.update();
@@ -200,8 +179,7 @@ function mainLoop() {
             // })
 
             //add new objects
-
-            if (fishSpawnTimer > fishSpawnDelay) {
+            if (fishSpawnTimer > fishSpawnDelay && objectsByFaction[2].length<50) {
                 fishSpawnTimer -= fishSpawnDelay;
                 //add new Fish
                 for (i = 0; i < 2; i++) {
@@ -213,8 +191,7 @@ function mainLoop() {
                     speed = 100;
                     xvel = speed * (Math.random() - 0.5);
                     yvel = speed * (Math.random() - 0.5);
-                    // color = new jQuery.Color("rgba(102,204,255,1)");
-                    color = new jQuery.Color("rgba(0,0,0,1)");
+                    color = {r:0,g:0,b:0,a:1};
                     fish = new Fish({ x, y, width, height }, "rectangle", color);
                     fish.velocity.x = xvel;
                     fish.velocity.y = yvel;
@@ -223,7 +200,7 @@ function mainLoop() {
                 }
             }
 
-            if (sharkSpawnTimer > sharkSpawnDelay) {
+            if (sharkSpawnTimer > sharkSpawnDelay && objectsByFaction[3].length<4) {
                 sharkSpawnTimer -= sharkSpawnDelay;
                 //add new Shark(s)
                 for (i = 0; i < 1; i++) {
@@ -235,8 +212,7 @@ function mainLoop() {
                     speed = 100;
                     xvel = speed * (Math.random() - 0.5);
                     yvel = speed * (Math.random() - 0.5);
-                    // color = new jQuery.Color("rgba(102,204,255,1)");
-                    color = new jQuery.Color("rgba(0,0,0,1)");
+                    color = {r:0,g:0,b:0,a:1};
                     shark = new Shark({ x, y, width, height }, "rectangle", color);
                     shark.velocity.x = xvel;
                     shark.velocity.y = yvel;
@@ -250,16 +226,19 @@ function mainLoop() {
                 // console.log(object);
                 object.draw();
             });
+            if(objectsByFaction[1].length>0) {
+                objectsByFaction[1][0].draw();
+            }
 
             //update stats
-            $(".statlist .stat1 .value").html(allObjects.length);
-            $(".statlist .stat2 .value").html(drawableObjects.length);
-            $(".statlist .stat3 .value").html(updateableObjects.length);
-            $(".statlist .stat4 .value").html(collisionObjects.length);
-            $(".statlist .stat5 .value").html(terrainObjects.length);
-            $(".statlist .stat9 .value").html(fishcounter);
-            $(".statlist .stat10 .value").html(performance.now() - lastFrameTime + "ms");
-            $(".fishcounter").html(fishcounter);
+            document.getElementById("value1").textContent=allObjects.length;
+            document.getElementById("value2").textContent=drawableObjects.length;
+            document.getElementById("value3").textContent=updateableObjects.length;
+            document.getElementById("value4").textContent=collisionObjects.length;
+            document.getElementById("value5").textContent=terrainObjects.length;
+            document.getElementById("value9").textContent=fishcounter;
+            document.getElementById("value10").textContent=performance.now() - lastFrameTime + "ms";
+            document.getElementById("fishcounter").textContent=fishcounter;
 
             lastFrameTime = performance.now();
 
@@ -343,7 +322,7 @@ function handleCollisions() {
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
                                 object1.startDestruction();
                                 togglePause();
-                                $('.pausemenu h2').html("Game Over!");
+                                document.getElementById("menuline2").innerHTML="Game Over!";
                             }
                         }
                     }
@@ -454,7 +433,7 @@ function togglePause() {
     lastFrameTime = performance.now();
     isPaused = !isPaused;
     pauseButton.textContent = "Continue";
-    // console.log(objectsByFaction);
+    console.log(objectsByFaction);
     // console.log(camera);
 }
 
