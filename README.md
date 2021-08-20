@@ -1,6 +1,6 @@
 # Penguins
 
-Quickly, make a game about penguins before they go extinct
+Quickly, make a game about penguins before they go extinct. Now using TypeScript.
 
 todo:
 - General
@@ -9,6 +9,7 @@ todo:
   - [x] menu
   - [x] remove jQuery? (using jQuery Color currently)
   - [ ] completely separate game logic and animate functions
+  - [ ] style page (maybe try tailwind or bootstrap?)
 - Collision and Drawing
   - [ ] implement polygon-polygon collision
   - [x] unify object draw types
@@ -31,8 +32,7 @@ todo:
   - [ ] debug stattrackers too close in small windows
   - [ ] flipping images when drawing completely screws camera (cause by flipping around wrong point, also causes teleporting sharks)
   - [ ] collision broken for everything except rectangles (add new class rework coordinates)
-  - [ ] very slow since class rework (21ms/frame), check for redundant code in classes
-  - [ ] fish sometimes not showing up for a second when starting game
+  - [ ] very slow since class rework (21ms/frame)
 - Bugs, fixed
   - [x] Sharks get way to fast (acceleration unbounded) (added more friction)
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
@@ -41,3 +41,4 @@ todo:
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] fishcounter off sometimes, events not triggering correctly?
   - [ ] pausemenu triggering for a frame or two, draw issue? (set menu invisible while in background?)
+  - [ ] fish sometimes not showing up for a second when starting game (retest on slow inet)
