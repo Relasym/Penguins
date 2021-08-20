@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "target" :"ES2015",
+        "noImplicitAny" : true
+    },
+    "files": [
+        "index.ts",
+        "classes.ts"
+    ]
+}
