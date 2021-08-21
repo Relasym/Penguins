@@ -149,7 +149,7 @@ class Actor extends MovingObject {
 class Fish extends Actor {
     constructor(definition: definition, type: String, color: color) {
         super(definition, type, color)
-        this.image.src = fishSrc;
+        this.image = fishImage;
     }
 
     draw() {
@@ -188,7 +188,7 @@ class Fish extends Actor {
     startDestruction() {
         super.startDestruction();
         for (let object of objectsByFaction[this.faction]) {
-            let distance = vectorLength({ x: object.definition.x - this.definition.x, y: object.definition.y - this.definition.y});
+            let distance = vectorLength({ x: object.definition.x - this.definition.x, y: object.definition.y - this.definition.y });
             if (distance < 200) {
                 object.velocity.x += (this.definition.x - object.definition.x) * -50 / distance;
                 object.velocity.y += (this.definition.y - object.definition.y) * -50 / distance;
@@ -200,10 +200,11 @@ class Fish extends Actor {
 
 //follows the player, not very accurately
 class Shark extends Actor {
+    frictionPerSecond = 0.005;
     sharkAccelerationFactor = 1; // acceleration per distance from player per second
     constructor(definition: definition, type: String, color: color) {
         super(definition, type, color);
-        this.image.src = sharkSrc;
+        this.image = sharkImage;
     }
 
     draw() {
@@ -243,10 +244,10 @@ class Shark extends Actor {
 
         //friction
         if (this.definition.y > 0) {
+            let friction = vectorLength(this.velocity) * this.frictionPerSecond * currentFrameDuration / 1000
             //this doesn't give quite the same friction for every framerate, but it's a reasonable approximation
-            let frictionPerSecond = 0.1;
-            this.velocity.x *= 1 - (frictionPerSecond * currentFrameDuration / 1000);
-            this.velocity.y *= 1 - (frictionPerSecond * currentFrameDuration / 1000);
+            this.velocity.x *= 1 - (friction);
+            this.velocity.y *= 1 - (friction);
         }
 
     }
@@ -255,17 +256,19 @@ class Shark extends Actor {
 
 //a very hungry penguin
 class Player extends Actor {
+    rotationSpeed = Math.PI * 2.0; //radians per second
     maxspeed = 5000; //units (currently ==pixels) per second
     refireDelay = 50; //ms
     lastFire;
     projectileSpeed = 10; //old, needs update
     speed: number;
     allBubbleSpeed = 300; //player speed at which a bubble is spawned every frame 
+    frictionPerSecond = 0.005;
     constructor(definition: definition, type: String, color: color, speed: number) {
         super(definition, type, color);
         this.speed = speed;
         this.lastFire = performance.now();
-        this.image.src = penguinSrc;
+        this.image = penguinImage;
     }
     update() {
         super.update()
@@ -275,11 +278,12 @@ class Player extends Actor {
         camera.y = this.definition.y - 300 + this.definition.height / 2;
 
         // this.velocity = { x: 0, y: 0 }
+
         //control
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
-            if (currentInputs.has("a")) { this.rotation -= 0.1; }
-            if (currentInputs.has("d")) { this.rotation += 0.1; }
+            if (currentInputs.has("a")) { this.rotation -= this.rotationSpeed * currentFrameDuration / 1000; }
+            if (currentInputs.has("d")) { this.rotation += this.rotationSpeed * currentFrameDuration / 1000; }
         } else {
             this.affectedByGravity = false;
             if (currentInputs.has("w")) {
@@ -290,8 +294,8 @@ class Player extends Actor {
                 this.velocity.x -= this.speed * Math.sin(this.rotation)
                 this.velocity.y += this.speed * Math.cos(this.rotation)
             }
-            if (currentInputs.has("a")) { this.rotation -= 0.1; }
-            if (currentInputs.has("d")) { this.rotation += 0.1; }
+            if (currentInputs.has("a")) { this.rotation -= this.rotationSpeed * currentFrameDuration / 1000; }
+            if (currentInputs.has("d")) { this.rotation += this.rotationSpeed * currentFrameDuration / 1000; }
 
             //sry penguin, no guns for you
             // if (currentInputs.has(" ")) {
@@ -309,11 +313,11 @@ class Player extends Actor {
         }
 
         //create bubbles
-        if (this.definition.y>0 && Math.random() < vectorLength(this.velocity) / this.allBubbleSpeed) {
-            let x=this.definition.x + this.definition.width / 2;
-            let y=this.definition.y + this.definition.height / 2;
-            let radius= 1 + (Math.random() * vectorLength(this.velocity) / 100);
-            let bubble = new MovingObject({ x: x, y: y, radius: radius}, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
+        if (this.definition.y > 0 && Math.random() < vectorLength(this.velocity) / this.allBubbleSpeed) {
+            let x = this.definition.x + this.definition.width / 2 - this.definition.height * 0.8 / 2 * Math.sin(this.rotation);
+            let y = this.definition.y + this.definition.height /2 + this.definition.height * 0.9 / 2 * Math.cos(this.rotation);
+            let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
+            let bubble = new MovingObject({ x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
@@ -330,10 +334,10 @@ class Player extends Actor {
 
         //friction
         if (this.definition.y > 0) {
-            //this doesn't give quite the same friction for every framerate, but for low frame durations it's a lot better than just calculating per tick
-            let frictionPerSecond = 0.1;
-            this.velocity.x *= 1 - (frictionPerSecond * currentFrameDuration / 1000);
-            this.velocity.y *= 1 - (frictionPerSecond * currentFrameDuration / 1000);
+            let friction = vectorLength(this.velocity) * this.frictionPerSecond * currentFrameDuration / 1000
+            //this doesn't give quite the same friction for every framerate, but it's a reasonable approximation
+            this.velocity.x *= 1 - (friction);
+            this.velocity.y *= 1 - (friction);
         }
 
         //movement
