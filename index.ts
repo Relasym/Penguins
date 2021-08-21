@@ -25,6 +25,8 @@ const sharkSpawnDelay = 10000; //ms
 
 
 const simulationFPS = 60; //frames per second
+const simulationFPSArray: number[] = new Array();
+let simulationFPSAverage: number = 0;
 const simulationTPF = 1000 / simulationFPS; //ms
 let currentFrameDuration = 0;
 
@@ -32,13 +34,20 @@ let currentFrameDuration = 0;
 let fishcounter = 0; //fish eaten
 let isPaused: boolean = false;
 
-const penguinImage = document.getElementsByClassName("penguin").item(0);
-const fishImage = document.getElementsByClassName("fish").item(0);
-const sharkImage = document.getElementsByClassName("shark").item(0);
+// const penguinImage = document.getElementsByClassName("penguin").item(0);
+// const fishImage = document.getElementsByClassName("fish").item(0);
+// const sharkImage = document.getElementsByClassName("shark").item(0);
 
 const penguinSrc: string = "https://www.freeiconspng.com/uploads/penguin-png-5.png";
 const fishSrc: string = "https://www.freeiconspng.com/uploads/fish-png-16.png";
 const sharkSrc: string = "https://www.freeiconspng.com/uploads/animal-shark-png-6.png";
+
+const penguinImage = new Image();
+penguinImage.src = penguinSrc;
+const fishImage = new Image();
+fishImage.src = fishSrc;
+const sharkImage = new Image();
+sharkImage.src = sharkSrc;
 
 const pauseButton = document.getElementsByClassName("pausebutton").item(0);
 const pauseMenu = document.getElementsByClassName("pausemenu").item(0);
@@ -65,6 +74,10 @@ let lastFrameTime = 0;
 let totalRuntime = 0;
 let fishSpawnTimer = 0; //time since last fish spawn
 let sharkSpawnTimer = 0; //time since last shark spawn
+
+
+let currentFrame = 0;  // last calculated frame, incremented by game logic
+let lastDrawnFrame = 0; // last drawn frame, incremented by draw loop
 
 
 function start() {
@@ -130,17 +143,18 @@ function start() {
     //unpause and start Game
     togglePause();
     pauseButton.textContent = "Start";
-    mainLoop();
+    logicLoop();
+    drawLoop();
 }
 
-function mainLoop() {
-    //draw frame & callback
-    requestAnimationFrame(mainLoop);
+
+function logicLoop() {
+    setTimeout(logicLoop, 0);
 
     //only process logic if not paused and enough time has paused
     if (!isPaused) {
         currentFrameDuration = performance.now() - lastFrameTime;
-        if (currentFrameDuration > simulationTPF) {
+        if (currentFrameDuration > simulationTPF-10) {
             // let animationStartTime = performance.now();
 
             totalRuntime += currentFrameDuration;
@@ -148,35 +162,10 @@ function mainLoop() {
             sharkSpawnTimer += currentFrameDuration;
             collisionChecks = 0;
 
-            //reset frame
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-            //depth-dependent color calculation
-            let color = [124, 233, 252];
-            let newcolor = color.map((color) => {
-                let depth = Math.max(0, camera.y);
-                let maxdepth = 2500;
-                let remainingdepth = maxdepth - depth;
-                color = color * remainingdepth / maxdepth;
-                return color;
-            });
-            context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-
             //update objects
             updateableObjects.forEach((object: BasicObject) => {
                 object.update();
             });
-
-            //collision testing after updating but before drawing
-            handleCollisions();
-
-            //cleanup offscreen objects
-            // drawableObjects.forEach(object => {
-            //     if (object.x < -canvas.width || object.x > 2 * canvas.width || object.y < -canvas.height || object.y > 2 * canvas.height) {
-            //         object.deregister();
-            //     }
-            // })
 
             //add new objects
             if (fishSpawnTimer > fishSpawnDelay && objectsByFaction[2].length < 100) {
@@ -221,39 +210,80 @@ function mainLoop() {
                 }
             }
 
-            //draw objects
-            drawableObjects.forEach((object: DrawableObject) => {
-                // console.log(object);
-                object.draw();
-            });
-            if (objectsByFaction[1].length > 0) {
-                objectsByFaction[1][0].draw();
-            }
-
-            //update stats
-            document.getElementById("value1").textContent = allObjects.length.toString();
-            document.getElementById("value2").textContent = drawableObjects.length.toString();
-            document.getElementById("value3").textContent = updateableObjects.length.toString();
-            document.getElementById("value4").textContent = collisionObjects.length.toString();
-            document.getElementById("value5").textContent = terrainObjects.length.toString();
-            document.getElementById("value7").textContent = collisionChecks.toString();
-            if (objectsByFaction[1].length > 0) {
-                document.getElementById("value8").textContent = Math.round(vectorLength(objectsByFaction[1][0].velocity)).toString();
-            }
-            document.getElementById("value9").textContent = fishcounter.toString();
-            document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
-            document.getElementById("fishcounter").textContent = fishcounter.toString();
+            //collision testing last
+            handleCollisions();
 
             lastFrameTime = performance.now();
+            currentFrame++;
 
-            // let animationEndTime = performance.now();
-            // console.log(animationEndTime - animationStartTime);
+
+            if (simulationFPSArray.length == 60) {
+                simulationFPSArray.shift();
+            }
+            simulationFPSArray.push(currentFrameDuration);
+            // console.log(simulationFPSArray);
+            simulationFPSAverage = simulationFPSArray.reduce((a, b) => a + b) / 60;
+
         }
 
     }
 
+}
+
+function drawLoop() {
+    //draw frame & callback
+    requestAnimationFrame(drawLoop);
+
+    if (!isPaused && currentFrame > lastDrawnFrame) {
+        lastDrawnFrame++;
+
+
+        //reset frame
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        //depth-dependent color calculation
+        let color = [124, 233, 252];
+        let newcolor = color.map((color) => {
+            let depth = Math.max(0, camera.y);
+            let maxdepth = 2500;
+            let remainingdepth = maxdepth - depth;
+            color = color * remainingdepth / maxdepth;
+            return color;
+        });
+        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        //draw objects
+        drawableObjects.forEach((object: DrawableObject) => {
+            // console.log(object);
+            object.draw();
+        });
+
+        //draw player object again so it's on top. hack.
+        if (objectsByFaction[1].length > 0) {
+            objectsByFaction[1][0].draw();
+        }
+
+        //update stats
+        document.getElementById("value1").textContent = allObjects.length.toString();
+        document.getElementById("value2").textContent = drawableObjects.length.toString();
+        document.getElementById("value3").textContent = updateableObjects.length.toString();
+        document.getElementById("value4").textContent = collisionObjects.length.toString();
+        document.getElementById("value5").textContent = terrainObjects.length.toString();
+        document.getElementById("value7").textContent = collisionChecks.toString();
+        if (objectsByFaction[1].length > 0) {
+            document.getElementById("value8").textContent = Math.round(vectorLength(objectsByFaction[1][0].velocity)).toString();
+        }
+        document.getElementById("value9").textContent = fishcounter.toString();
+        // document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
+        document.getElementById("value10").textContent = Math.round(simulationFPSAverage).toString();
+        document.getElementById("fishcounter").textContent = fishcounter.toString();
+
+    }
 
 }
+
+
 
 /*collision functions */
 function handleCollisions() {
@@ -442,6 +472,7 @@ function togglePause() {
 
 //DOM loaded
 window.addEventListener('DOMContentLoaded', (event) => {
+
 });
 
 //fully loaded
