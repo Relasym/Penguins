@@ -8,7 +8,7 @@ todo:
   - [x] pause function
   - [x] menu
   - [x] remove jQuery? (using jQuery Color currently)
-  - [ ] completely separate game logic and animate functions
+  - [x] completely separate game logic and animate functions
   - [ ] style page (maybe try tailwind or bootstrap?)
 - Collision and Drawing
   - [ ] implement polygon-polygon collision
@@ -32,11 +32,11 @@ todo:
   - [ ] debug stattrackers too close in small windows
   - [ ] flipping images when drawing completely screws camera (cause by flipping around wrong point, also causes teleporting sharks)
   - [ ] collision broken for everything except rectangles (add new class rework coordinates)
-  - [ ] very slow since class rework (21ms/frame)
 - Bugs, fixed
   - [x] Sharks get way to fast (acceleration unbounded) (added more friction)
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
   - [x] flying fish
+  - [x] very slow since class rework (21ms/frame)
 - Bugs, probably fixed (no longer reproducible)
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] fishcounter off sometimes, events not triggering correctly?
