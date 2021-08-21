@@ -89,30 +89,6 @@ div.pausemenu {
     top: 100px;
 }
 
-.penguin {
-    display: none;
-    border: 3px solid red;
-    height: 100px;
-    width: 50px;
-    object-fit: cover;
-}
-
-.fish {
-    display: none;
-    border: 3px solid red;
-    height: 50px;
-    width: 100px;
-    object-fit: cover;
-}
-
-.shark {
-    display: none;
-    border: 3px solid red;
-    height: 50px;
-    width: 100px;
-    object-fit: cover;
-}
-
 div.sources {
     font-size: 0.5em;
 }
