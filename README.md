@@ -37,6 +37,7 @@ todo:
   - [x] spacebar triggers pause menu after it has been opened once (.blur() on pause)
   - [x] flying fish
   - [x] very slow since class rework (21ms/frame)
+  - [x] double entries in faction arrays
 - Bugs, probably fixed (no longer reproducible)
   - [ ] penguin moving in rectangles instead of straight lines when changing direction (max speed issue?)
   - [ ] fishcounter off sometimes, events not triggering correctly?
