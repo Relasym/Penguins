@@ -18,10 +18,11 @@ type vector = {
     y: number;
 }
 
+
 let camera: camera = { x: 0, y: 0 }; //set to player position + screensize offset while running
 
 const fishSpawnDelay = 1000; //ms
-const sharkSpawnDelay = 10000; //ms
+const sharkSpawnDelay = 5000; //ms
 
 
 const simulationFPS = 60; //frames per second
@@ -189,7 +190,7 @@ function logicLoop() {
                 }
             }
 
-            if (sharkSpawnTimer > sharkSpawnDelay && objectsByFaction[3].length < 4) {
+            if (sharkSpawnTimer > sharkSpawnDelay && objectsByFaction[3].length < 5) {
                 sharkSpawnTimer -= sharkSpawnDelay;
                 //add new Shark(s)
                 for (let i = 0; i < 1; i++) {
@@ -203,6 +204,7 @@ function logicLoop() {
                     let yvel = speed * (Math.random() - 0.5);
                     let color = { r: 0, g: 0, b: 0, a: 1 };
                     let shark = new Shark({ x, y, width, height }, "rectangle", color);
+                    shark.sharkAccelerationFactor=3-2*scale;
                     shark.velocity.x = xvel;
                     shark.velocity.y = yvel;
                     shark.faction = 3;
@@ -355,8 +357,8 @@ function handleCollisions() {
                             }
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
                                 object1.startDestruction();
-                                togglePause();
                                 document.getElementById("menuline2").innerHTML = "Game Over!";
+                                togglePause();
                             }
                         }
                     }
@@ -464,8 +466,26 @@ function togglePause() {
     lastFrameTime = performance.now();
     isPaused = !isPaused;
     pauseButton.textContent = "Continue";
-    console.log("Current Objects: ")
-    console.log(objectsByFaction);
+    // console.log("Current Objects: ");
+    // console.log(objectsByFaction);
+
+    if (objectsByFaction[1].length==0) {
+        console.info("Restarting");
+        objectsByFaction.splice(0,objectsByFaction.length);
+        projectilesByFaction.splice(0,projectilesByFaction.length);
+        drawableObjects.splice(0,drawableObjects.length);
+        updateableObjects.splice(0,updateableObjects.length);
+        for (let i = 0; i < factionAmount; i++) {
+            projectilesByFaction.push(new Array());
+            objectsByFaction.push(new Array());
+        }
+        
+        start();
+        togglePause();
+        pauseButton.textContent= "Restart";
+        document.getElementById("menuline2").innerHTML = "use WASD to hunt tasty fish!";
+    }
+
     // console.log(camera);
 }
 
