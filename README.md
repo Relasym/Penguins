@@ -18,7 +18,7 @@ todo:
   - [ ] apply depth color change to all objects, not just background
 - Levels
   - [x] add camera (possible issues with transformation matrix in rotateable objects?)
-  - [ ] REALLY need an object collection class to handle spawning etc., requires
+  - [x] REALLY need an object collection class to handle spawning etc., requires
   - [ ] complete restructuring of class calls
   - [ ] add level boundary
   - [ ] autodestruct objects when outside of level
