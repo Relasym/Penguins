@@ -5,6 +5,7 @@
     },
     "files": [
         "index.ts",
-        "classes.ts"
+        "classes.ts",
+        "levels.ts"
     ]
 }
