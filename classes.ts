@@ -23,27 +23,32 @@ class BasicObject {
     isDestroying = false;
     destructionTime = 300; //ms
     destructionProgress = 1.0; //destroys object if it reaches 0, used as a multiplier for color alpha
+    owner : Level;
 
-    register() {
-        allObjects.push(this)
-        if (this.isDrawable) { drawableObjects.push(this) }
-        if (this.isUpdateable) { updateableObjects.push(this) }
-        objectsByFaction[this.faction].push(this);
+    constructor(owner: Level ) {
+        this.owner=owner;
     }
 
-    deregister() {
-        allObjects.splice(allObjects.indexOf(this), 1);
-        if (this.isDrawable) { drawableObjects.splice(drawableObjects.indexOf(this), 1); }
-        if (this.isUpdateable) { updateableObjects.splice(updateableObjects.indexOf(this), 1); }
+    register(): void {
+        this.owner.allObjects.push(this)
+        if (this.isDrawable) { this.owner.drawableObjects.push(this) }
+        if (this.isUpdateable) { this.owner.updateableObjects.push(this) }
+        this.owner.objectsByFaction[this.faction].push(this);
     }
 
-    startDestruction() {
+    deregister(): void {
+        this.owner.allObjects.splice(this.owner.allObjects.indexOf(this), 1);
+        if (this.isDrawable) { this.owner.drawableObjects.splice(this.owner.drawableObjects.indexOf(this), 1); }
+        if (this.isUpdateable) { this.owner.updateableObjects.splice(this.owner.updateableObjects.indexOf(this), 1); }
+    }
+
+    startDestruction(): void {
         this.hasCollision = false;
         this.isDestroying = true;
-        objectsByFaction[this.faction].splice(objectsByFaction[this.faction].indexOf(this), 1);
+        this.owner.objectsByFaction[this.faction].splice(this.owner.objectsByFaction[this.faction].indexOf(this), 1);
     }
 
-    update() {
+    update(currentFrameDuration: number): void {
         if (this.isDestroying) {
             this.destructionProgress -= currentFrameDuration / this.destructionTime;
         }
@@ -63,40 +68,40 @@ class DrawableObject extends BasicObject {
     rotation = 0;
     definition: definition;
     color: color;
-    constructor(definition: definition, type: String, color: color) {
-        super()
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner)
         this.definition = definition;
         this.type = type;
         this.color = color;
         this.image = new Image();
     }
-    draw() {
+    draw(): void {
         if (this.type == "circle") {
             //todo add images for circle types
-            context.beginPath();
-            context.arc(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.radius, 0, Math.PI * 2, false);
+            this.owner.context.beginPath();
+            this.owner.context.arc(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.radius, 0, Math.PI * 2, false);
             if (this.isDestroying) {
-                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
+                this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             } else {
-                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+                this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
-            context.fill();
+            this.owner.context.fill();
         }
 
         if (this.type == "rectangle") {
             if (this.isDestroying) {
-                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
+                this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             } else {
-                context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+                this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
-            context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
-            context.rotate(this.rotation);
-            context.translate(-1 * (this.definition.x + this.definition.width / 2), -1 * (this.definition.y + this.definition.height / 2));
-            context.fillRect(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+            this.owner.context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
+            this.owner.context.rotate(this.rotation);
+            this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2), -1 * (this.definition.y + this.definition.height / 2));
+            this.owner.context.fillRect(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
             if (this.image != null) {
-                context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+                this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
             }
-            context.setTransform(1, 0, 0, 1, 0, 0);
+            this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         }
 
     }
@@ -109,12 +114,12 @@ class MovingObject extends DrawableObject {
     movesWhileDestroying = false;
     velocity = { x: 0, y: 0 };
 
-    constructor(definition: definition, type: String, color: color) {
-        super(definition, type, color);
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner, definition, type, color);
     }
 
-    update() {
-        super.update();
+    update(currentFrameDuration: number): void {
+        super.update(currentFrameDuration);
         if (this.affectedByGravity) {
             this.velocity.y += gravity * currentFrameDuration / 1000;
         }
@@ -126,41 +131,39 @@ class MovingObject extends DrawableObject {
     }
 }
 
-//a actors have factions
+//what was this even for???
 class Actor extends MovingObject {
     refireDelay = 1000; //ms
     lastFire = 0;
 
-    constructor(definition: definition, type: String, color: color) {
-        super(definition, type, color);
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner, definition, type, color);
     }
-    register() {
+    register(): void {
         super.register();
-        objectsByFaction[this.faction].push(this);
     }
-    startDestruction() {
+    startDestruction(): void {
         super.startDestruction();
-        objectsByFaction[this.faction].splice(objectsByFaction[this.faction].indexOf(this), 1);
     }
 
 }
 
 //moves and scares other fish when it gets eaten
 class Fish extends Actor {
-    constructor(definition: definition, type: String, color: color) {
-        super(definition, type, color)
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner,definition, type, color)
         this.image = fishImage;
     }
 
-    draw() {
+    draw(): void {
         if (this.isDestroying) {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
         } else {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
-        context.save();
-        context.globalAlpha = this.destructionProgress;
+        this.owner.context.save();
+        this.owner.context.globalAlpha = this.destructionProgress;
         // context.translate(this.x + this.width / 2, this.y + this.height / 2);
         // context.rotate(this.rotation);
 
@@ -169,13 +172,13 @@ class Fish extends Actor {
         // if (this.velocity.x < 0) {
         //     context.scale(-1, 1);
         // }
-        context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.restore();
+        this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.owner.context.restore();
     }
 
-    update() {
-        super.update();
+    update(currentFrameDuration: number): void {
+        super.update(currentFrameDuration);
 
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
@@ -185,7 +188,7 @@ class Fish extends Actor {
 
     }
 
-    startDestruction() {
+    startDestruction(): void {
         super.startDestruction();
         for (let object of objectsByFaction[this.faction]) {
             let distance = vectorLength({ x: object.definition.x - this.definition.x, y: object.definition.y - this.definition.y });
@@ -200,22 +203,22 @@ class Fish extends Actor {
 
 //follows the player, not very accurately
 class Shark extends Actor {
-    frictionPerSecond = 0.005;
-    sharkAccelerationFactor = 1; // acceleration per distance from player per second
-    constructor(definition: definition, type: String, color: color) {
-        super(definition, type, color);
+    frictionPerSecond = 0.002;
+    sharkAccelerationFactor = 2; // acceleration per distance from player per second
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner, definition, type, color);
         this.image = sharkImage;
     }
 
-    draw() {
+    draw(): void {
         if (this.isDestroying) {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
         } else {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
-        context.save();
-        context.globalAlpha = this.destructionProgress;
+        this.owner.context.save();
+        this.owner.context.globalAlpha = this.destructionProgress;
         // context.translate(this.x + this.width / 2, this.y + this.height / 2);
         // context.rotate(this.rotation);
 
@@ -224,21 +227,21 @@ class Shark extends Actor {
         // if (this.velocity.x > 0) {
         //     context.scale(-1, 1);
         // }
-        context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.restore();
+        this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.owner.context.restore();
     }
 
-    update() {
-        super.update();
+    update(currentFrameDuration: number): void {
+        super.update(currentFrameDuration);
 
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
         } else {
             this.affectedByGravity = false;
-            if (objectsByFaction[1].length > 0) {
-                this.velocity.x += (objectsByFaction[1][0].definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (objectsByFaction[1][0].definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            if (this.owner.objectsByFaction[1].length > 0) {
+                this.velocity.x += (this.owner.objectsByFaction[1][0].definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.owner.objectsByFaction[1][0].definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
 
@@ -264,14 +267,14 @@ class Player extends Actor {
     speed: number;
     allBubbleSpeed = 300; //player speed at which a bubble is spawned every frame 
     frictionPerSecond = 0.005;
-    constructor(definition: definition, type: String, color: color, speed: number) {
-        super(definition, type, color);
+    constructor(owner: Level, definition: definition, type: String, color: color, speed: number) {
+        super(owner, definition, type, color);
         this.speed = speed;
         this.lastFire = performance.now();
         this.image = penguinImage;
     }
-    update() {
-        super.update()
+    update(currentFrameDuration: number): void {
+        super.update(currentFrameDuration)
 
         //todo remove this hack
         camera.x = this.definition.x - 400 + this.definition.width / 2;
@@ -317,7 +320,7 @@ class Player extends Actor {
             let x = this.definition.x + this.definition.width / 2 - this.definition.height * 0.8 / 2 * Math.sin(this.rotation);
             let y = this.definition.y + this.definition.height /2 + this.definition.height * 0.9 / 2 * Math.cos(this.rotation);
             let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
-            let bubble = new MovingObject({ x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
+            let bubble = new MovingObject(this.owner,{ x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);
@@ -345,11 +348,11 @@ class Player extends Actor {
         this.definition.y += this.velocity.y * currentFrameDuration / 1000;
 
     }
-    draw() {
+    draw(): void {
         if (this.isDestroying) {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
         } else {
-            context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
+            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
         }
 
         /*
@@ -362,12 +365,12 @@ class Player extends Actor {
         */
 
         // context.fillRect(this.x, this.y, this.width, this.height);
-        context.translate(this.definition.x + this.definition.width / 2 - camera.x, this.definition.y + this.definition.height / 2 - camera.y);
-        context.rotate(this.rotation);
-        context.translate(-1 * (this.definition.x + this.definition.width / 2 - camera.x), -1 * (this.definition.y + this.definition.height / 2 - camera.y));
+        this.owner.context.translate(this.definition.x + this.definition.width / 2 - camera.x, this.definition.y + this.definition.height / 2 - camera.y);
+        this.owner.context.rotate(this.rotation);
+        this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2 - camera.x), -1 * (this.definition.y + this.definition.height / 2 - camera.y));
 
-        context.drawImage(this.image, 55, 0, 115, 200, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
-        context.setTransform(1, 0, 0, 1, 0, 0);
+        this.owner.context.drawImage(this.image, 55, 0, 115, 200, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
     }
 
 }
@@ -375,20 +378,20 @@ class Player extends Actor {
 //basic projectile, not doing much
 class Projectile extends MovingObject {
     hasCollision = true;
-    constructor(definition: definition, type: String, color: color) {
-        super(definition, type, color);
+    constructor(owner: Level, definition: definition, type: String, color: color) {
+        super(owner, definition, type, color);
     }
-    draw() {
+    draw(): void {
         super.draw();
     }
-    register() {
+    register(): void {
         super.register();
-        projectileObjects.push(this);
-        projectilesByFaction[this.faction].push(this);
+        this.owner.projectileObjects.push(this);
+        this.owner.projectilesByFaction[this.faction].push(this);
     }
-    deregister() {
+    deregister(): void {
         super.deregister();
-        projectileObjects.splice(projectileObjects.indexOf(this), 1);
-        projectilesByFaction[this.faction].splice(projectilesByFaction[this.faction].indexOf(this), 1);
+        this.owner.projectileObjects.splice(this.owner.projectileObjects.indexOf(this), 1);
+        this.owner.projectilesByFaction[this.faction].splice(this.owner.projectilesByFaction[this.faction].indexOf(this), 1);
     }
 }
