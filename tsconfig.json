@@ -4,8 +4,8 @@
         "noImplicitAny" : true
     },
     "files": [
-        "index.ts",
-        "classes.ts",
+        "main.ts",
+        "gameObjects.ts",
         "levels.ts"
     ]
 }

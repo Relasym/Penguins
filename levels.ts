@@ -1,5 +1,7 @@
 class Level {
     context: CanvasRenderingContext2D;
+    player: Player;
+    camera: camera;
 
 
     allObjects: object[] = [];
@@ -21,14 +23,14 @@ class Level {
 
 
     constructor(context: CanvasRenderingContext2D) {
-        this.context=context;
+        this.context = context;
         for (let i = 0; i < this.factionAmount; i++) {
             this.projectilesByFaction.push(new Array());
             this.objectsByFaction.push(new Array());
         }
         this.totalRuntime = 0;
         this.fishSpawnTimer = 0;
-        this.sharkSpawnTimer = 0; 
+        this.sharkSpawnTimer = 0;
     }
 
     draw() {
@@ -47,6 +49,12 @@ class Level {
             object.update(currentFrameDuration);
         });
 
+        //todo remove this hack
+        if(this.player!=null) {
+            this.camera.x = this.player.definition.x - 400 + this.player.definition.width / 2;
+            this.camera.y = this.player.definition.y - 300 + this.player.definition.height / 2;
+        }
+ 
         if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].length < 100) {
             this.fishSpawnTimer -= this.fishSpawnDelay;
             //add new Fish
@@ -102,6 +110,7 @@ class Level {
         player.velocity.x = 25;
         player.velocity.y = 25;
         player.register();
+        this.player = player;
 
     }
 
@@ -127,19 +136,19 @@ class Level {
     }
     newShark() {
         let x = canvas.width * Math.random();
-                let y = canvas.height * Math.random();
-                let scale = Math.random() / 2 + 0.5;
-                let width = 100 * scale;
-                let height = 40 * scale;
-                let speed = 100;
-                let xvel = speed * (Math.random() - 0.5);
-                let yvel = speed * (Math.random() - 0.5);
-                let color = { r: 0, g: 0, b: 0, a: 1 };
-                let shark = new Shark(this, { x, y, width, height }, "rectangle", color);
-                shark.sharkAccelerationFactor = 3 - 2 * scale;
-                shark.velocity.x = xvel;
-                shark.velocity.y = yvel;
-                shark.faction = 3;
-                shark.register();
+        let y = canvas.height * Math.random();
+        let scale = Math.random() / 2 + 0.5;
+        let width = 100 * scale;
+        let height = 40 * scale;
+        let speed = 100;
+        let xvel = speed * (Math.random() - 0.5);
+        let yvel = speed * (Math.random() - 0.5);
+        let color = { r: 0, g: 0, b: 0, a: 1 };
+        let shark = new Shark(this, { x, y, width, height }, "rectangle", color);
+        shark.sharkAccelerationFactor = 3 - 2 * scale;
+        shark.velocity.x = xvel;
+        shark.velocity.y = yvel;
+        shark.faction = 3;
+        shark.register();
     }
 }
