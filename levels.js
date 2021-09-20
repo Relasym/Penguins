@@ -1,24 +1,25 @@
 class Level {
     constructor(context) {
-        this.allObjects = [];
-        this.drawableObjects = [];
-        this.updateableObjects = [];
-        this.collisionObjects = [];
-        this.terrainObjects = [];
-        this.projectileObjects = [];
+        this.allObjects = new Set();
+        this.drawableObjects = new Set();
+        this.updateableObjects = new Set();
+        this.collisionObjects = new Set();
+        this.terrainObjects = new Set();
+        this.projectileObjects = new Set();
         this.fishSpawnDelay = 1000; //ms
         this.sharkSpawnDelay = 5000; //ms
         this.factionAmount = 10; //realistically no more than 4-5 (0: terrain, 1: player, rest: other)
-        this.projectilesByFaction = [];
         this.objectsByFaction = [];
+        this.projectilesByFaction = [];
         this.context = context;
         for (let i = 0; i < this.factionAmount; i++) {
-            this.projectilesByFaction.push(new Array());
-            this.objectsByFaction.push(new Array());
+            this.projectilesByFaction.push(new Set());
+            this.objectsByFaction.push(new Set());
         }
         this.totalRuntime = 0;
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
+        this.camera = { x: 0, y: 0 };
     }
     draw() {
         this.drawableObjects.forEach((object) => {
@@ -33,14 +34,18 @@ class Level {
         this.updateableObjects.forEach((object) => {
             object.update(currentFrameDuration);
         });
-        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].length < 100) {
+        if (this.player != null) {
+            this.camera.x = this.player.definition.x - 400 + this.player.definition.width / 2;
+            this.camera.y = this.player.definition.y - 300 + this.player.definition.height / 2;
+        }
+        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < 100) {
             this.fishSpawnTimer -= this.fishSpawnDelay;
             //add new Fish
             for (let i = 0; i < 4; i++) {
                 this.newFish();
             }
         }
-        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].length < 5) {
+        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].size < 5) {
             this.sharkSpawnTimer -= this.sharkSpawnDelay;
             //add new Shark(s)
             for (let i = 0; i < 1; i++) {
@@ -81,6 +86,7 @@ class Level {
         player.velocity.x = 25;
         player.velocity.y = 25;
         player.register();
+        this.player = player;
     }
     end() {
     }

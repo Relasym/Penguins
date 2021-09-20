@@ -10,28 +10,28 @@ class BasicObject {
         this.owner = owner;
     }
     register() {
-        this.owner.allObjects.push(this);
+        this.owner.allObjects.add(this);
         if (this.isDrawable) {
-            this.owner.drawableObjects.push(this);
+            this.owner.drawableObjects.add(this);
         }
         if (this.isUpdateable) {
-            this.owner.updateableObjects.push(this);
+            this.owner.updateableObjects.add(this);
         }
-        this.owner.objectsByFaction[this.faction].push(this);
+        this.owner.objectsByFaction[this.faction].add(this);
     }
     deregister() {
-        this.owner.allObjects.splice(this.owner.allObjects.indexOf(this), 1);
+        this.owner.allObjects.delete(this);
         if (this.isDrawable) {
-            this.owner.drawableObjects.splice(this.owner.drawableObjects.indexOf(this), 1);
+            this.owner.drawableObjects.delete(this);
         }
         if (this.isUpdateable) {
-            this.owner.updateableObjects.splice(this.owner.updateableObjects.indexOf(this), 1);
+            this.owner.updateableObjects.delete(this);
         }
     }
     startDestruction() {
         this.hasCollision = false;
         this.isDestroying = true;
-        this.owner.objectsByFaction[this.faction].splice(this.owner.objectsByFaction[this.faction].indexOf(this), 1);
+        this.owner.objectsByFaction[this.faction].delete(this);
     }
     update(currentFrameDuration) {
         if (this.isDestroying) {
@@ -58,7 +58,7 @@ class DrawableObject extends BasicObject {
         if (this.type == "circle") {
             //todo add images for circle types
             this.owner.context.beginPath();
-            this.owner.context.arc(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.radius, 0, Math.PI * 2, false);
+            this.owner.context.arc(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.radius, 0, Math.PI * 2, false);
             if (this.isDestroying) {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             }
@@ -77,9 +77,9 @@ class DrawableObject extends BasicObject {
             this.owner.context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
             this.owner.context.rotate(this.rotation);
             this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2), -1 * (this.definition.y + this.definition.height / 2));
-            this.owner.context.fillRect(this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+            this.owner.context.fillRect(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
             if (this.image != null) {
-                this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+                this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
             }
             this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         }
@@ -141,7 +141,7 @@ class Fish extends Actor {
         // if (this.velocity.x < 0) {
         //     context.scale(-1, 1);
         // }
-        this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         this.owner.context.restore();
     }
@@ -189,7 +189,7 @@ class Shark extends Actor {
         // if (this.velocity.x > 0) {
         //     context.scale(-1, 1);
         // }
-        this.owner.context.drawImage(this.image, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         this.owner.context.restore();
     }
@@ -200,9 +200,9 @@ class Shark extends Actor {
         }
         else {
             this.affectedByGravity = false;
-            if (this.owner.objectsByFaction[1].length > 0) {
-                this.velocity.x += (this.owner.objectsByFaction[1][0].definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (this.owner.objectsByFaction[1][0].definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            if (this.owner.objectsByFaction[1].size > 0) {
+                this.velocity.x += (this.owner.player.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.owner.player.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
         //friction
@@ -230,9 +230,6 @@ class Player extends Actor {
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
-        //todo remove this hack
-        camera.x = this.definition.x - 400 + this.definition.width / 2;
-        camera.y = this.definition.y - 300 + this.definition.height / 2;
         // this.velocity = { x: 0, y: 0 }
         //control
         if (this.definition.y < 0) {
@@ -318,10 +315,10 @@ class Player extends Actor {
         reset transformation matrix
         */
         // context.fillRect(this.x, this.y, this.width, this.height);
-        this.owner.context.translate(this.definition.x + this.definition.width / 2 - camera.x, this.definition.y + this.definition.height / 2 - camera.y);
+        this.owner.context.translate(this.definition.x + this.definition.width / 2 - this.owner.camera.x, this.definition.y + this.definition.height / 2 - this.owner.camera.y);
         this.owner.context.rotate(this.rotation);
-        this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2 - camera.x), -1 * (this.definition.y + this.definition.height / 2 - camera.y));
-        this.owner.context.drawImage(this.image, 55, 0, 115, 200, this.definition.x - camera.x, this.definition.y - camera.y, this.definition.width, this.definition.height);
+        this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2 - this.owner.camera.x), -1 * (this.definition.y + this.definition.height / 2 - this.owner.camera.y));
+        this.owner.context.drawImage(this.image, 55, 0, 115, 200, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
     }
 }
@@ -336,12 +333,12 @@ class Projectile extends MovingObject {
     }
     register() {
         super.register();
-        this.owner.projectileObjects.push(this);
-        this.owner.projectilesByFaction[this.faction].push(this);
+        this.owner.projectileObjects.add(this);
+        this.owner.projectilesByFaction[this.faction].add(this);
     }
     deregister() {
         super.deregister();
-        this.owner.projectileObjects.splice(this.owner.projectileObjects.indexOf(this), 1);
-        this.owner.projectilesByFaction[this.faction].splice(this.owner.projectilesByFaction[this.faction].indexOf(this), 1);
+        this.owner.projectileObjects.delete(this);
+        this.owner.projectilesByFaction[this.faction].delete(this);
     }
 }

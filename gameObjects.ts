@@ -30,22 +30,22 @@ class BasicObject {
     }
 
     register(): void {
-        this.owner.allObjects.push(this)
-        if (this.isDrawable) { this.owner.drawableObjects.push(this) }
-        if (this.isUpdateable) { this.owner.updateableObjects.push(this) }
-        this.owner.objectsByFaction[this.faction].push(this);
+        this.owner.allObjects.add(this)
+        if (this.isDrawable) { this.owner.drawableObjects.add(this) }
+        if (this.isUpdateable) { this.owner.updateableObjects.add(this) }
+        this.owner.objectsByFaction[this.faction].add(this);
     }
 
     deregister(): void {
-        this.owner.allObjects.splice(this.owner.allObjects.indexOf(this), 1);
-        if (this.isDrawable) { this.owner.drawableObjects.splice(this.owner.drawableObjects.indexOf(this), 1); }
-        if (this.isUpdateable) { this.owner.updateableObjects.splice(this.owner.updateableObjects.indexOf(this), 1); }
+        this.owner.allObjects.delete(this);
+        if (this.isDrawable) { this.owner.drawableObjects.delete(this); }
+        if (this.isUpdateable) { this.owner.updateableObjects.delete(this); }
     }
 
     startDestruction(): void {
         this.hasCollision = false;
         this.isDestroying = true;
-        this.owner.objectsByFaction[this.faction].splice(this.owner.objectsByFaction[this.faction].indexOf(this), 1);
+        this.owner.objectsByFaction[this.faction].delete(this);
     }
 
     update(currentFrameDuration: number): void {
@@ -239,9 +239,9 @@ class Shark extends Actor {
             this.affectedByGravity = true;
         } else {
             this.affectedByGravity = false;
-            if (this.owner.objectsByFaction[1].length > 0) {
-                this.velocity.x += (this.owner.objectsByFaction[1][0].definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (this.owner.objectsByFaction[1][0].definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            if (this.owner.objectsByFaction[1].size > 0) {
+                this.velocity.x += (this.owner.player.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.owner.player.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
 
@@ -384,12 +384,12 @@ class Projectile extends MovingObject {
     }
     register(): void {
         super.register();
-        this.owner.projectileObjects.push(this);
-        this.owner.projectilesByFaction[this.faction].push(this);
+        this.owner.projectileObjects.add(this);
+        this.owner.projectilesByFaction[this.faction].add(this);
     }
     deregister(): void {
         super.deregister();
-        this.owner.projectileObjects.splice(this.owner.projectileObjects.indexOf(this), 1);
-        this.owner.projectilesByFaction[this.faction].splice(this.owner.projectilesByFaction[this.faction].indexOf(this), 1);
+        this.owner.projectileObjects.delete(this);
+        this.owner.projectilesByFaction[this.faction].delete(this);
     }
 }

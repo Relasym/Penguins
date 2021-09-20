@@ -305,7 +305,7 @@ function togglePause() {
     pauseButton.textContent = "Continue";
     // console.log("Current Objects: ");
     // console.log(objectsByFaction);
-    if (currentLevel.objectsByFaction[1].length == 0) {
+    if (currentLevel.objectsByFaction[1].size == 0) {
         console.info("Restarting");
         currentLevel = new Level(context);
         start();
