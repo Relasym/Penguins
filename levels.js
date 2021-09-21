@@ -124,3 +124,28 @@ class Level {
         shark.register();
     }
 }
+class GameObjectController {
+    constructor(size) {
+        this.fillFactor = 0.75;
+        this.growFactor = 1.5;
+        this.defaultSize = 10;
+        let startingSize = size || this.defaultSize;
+        this.objects = new Array(startingSize);
+        this.currentItems = 0;
+        this.currentSize = startingSize;
+        for (let i = 0; i < startingSize; i++) {
+            this.objects[i] = new this.objectType();
+        }
+    }
+    sizeCheck() {
+        if (this.currentItems > this.fillFactor * this.currentSize) {
+            let newsize = this.currentSize * this.growFactor;
+            let newObjects = new Array(newsize);
+            for (let i = 0; i < this.currentItems; i++) {
+                newObjects[i] = this.objects[i];
+            }
+            this.currentItems = newsize;
+            this.objects = newObjects;
+        }
+    }
+}

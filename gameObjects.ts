@@ -266,7 +266,7 @@ class Player extends Actor {
     projectileSpeed = 10; //old, needs update
     speed: number;
     allBubbleSpeed = 300; //player speed at which a bubble is spawned every frame 
-    frictionPerSecond = 0.005;
+    frictionPerSecond = 0.003;
     constructor(owner: Level, definition: definition, type: String, color: color, speed: number) {
         super(owner, definition, type, color);
         this.speed = speed;

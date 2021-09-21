@@ -223,7 +223,7 @@ class Player extends Actor {
         this.refireDelay = 50; //ms
         this.projectileSpeed = 10; //old, needs update
         this.allBubbleSpeed = 300; //player speed at which a bubble is spawned every frame 
-        this.frictionPerSecond = 0.005;
+        this.frictionPerSecond = 0.003;
         this.speed = speed;
         this.lastFire = performance.now();
         this.image = penguinImage;

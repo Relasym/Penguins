@@ -312,7 +312,11 @@ function collisionRectangleRectangle(rectangle1: any, rectangle2: any): boolean 
         rectangle1.definition.y + rectangle1.definition.height > rectangle2.definition.y)
 }
 function collisionRectangleCircle(rectangle: any, circle: any): boolean {
-    //order should be irrelevant, FIX!
+    if(rectangle.type=="circle") {
+        let swap=rectangle;
+        rectangle=circle;
+        circle=swap;
+    }
     let xborder = circle.x
     let yborder = circle.y
     if (circle.x < rectangle.x) xborder = rectangle.x

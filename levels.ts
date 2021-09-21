@@ -20,7 +20,7 @@ class Level {
     factionAmount = 10; //realistically no more than 4-5 (0: terrain, 1: player, rest: other)
     objectsByFaction: Set<object>[] = [];
     projectilesByFaction: Set<object>[] = [];
-    
+
 
 
     constructor(context: CanvasRenderingContext2D) {
@@ -32,7 +32,7 @@ class Level {
         this.totalRuntime = 0;
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
-        this.camera={x:0,y:0};
+        this.camera = { x: 0, y: 0 };
     }
 
     draw() {
@@ -51,11 +51,11 @@ class Level {
             object.update(currentFrameDuration);
         });
 
-        if(this.player!=null) {
+        if (this.player != null) {
             this.camera.x = this.player.definition.x - 400 + this.player.definition.width / 2;
             this.camera.y = this.player.definition.y - 300 + this.player.definition.height / 2;
         }
- 
+
         if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < 100) {
             this.fishSpawnTimer -= this.fishSpawnDelay;
             //add new Fish
@@ -152,4 +152,36 @@ class Level {
         shark.faction = 3;
         shark.register();
     }
+}
+
+class GameObjectController<T extends BasicObject> {
+    fillFactor = 0.75;
+    growFactor = 1.5;
+    defaultSize = 10;
+    currentItems: number;
+    currentSize: number;
+    objects: T[];
+    objectType: { new(): T ;}
+
+    constructor(size?:number){
+        let startingSize = size || this.defaultSize;
+        this.objects = new Array(startingSize);
+        this.currentItems = 0;
+        this.currentSize = startingSize
+        for (let i = 0; i < startingSize; i++) {
+            this.objects[i] = new this.objectType();
+        }
+    }
+    sizeCheck() {
+        if (this.currentItems > this.fillFactor * this.currentSize) {
+            let newsize = this.currentSize * this.growFactor;
+            let newObjects: T[] = new Array<T>(newsize);
+            for (let i = 0; i < this.currentItems; i++) {
+                newObjects[i] = this.objects[i];
+            }
+            this.currentItems = newsize;
+            this.objects = newObjects;
+        }
+    }
+    
 }

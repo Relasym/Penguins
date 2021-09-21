@@ -249,7 +249,11 @@ function collisionRectangleRectangle(rectangle1, rectangle2) {
         rectangle1.definition.y + rectangle1.definition.height > rectangle2.definition.y);
 }
 function collisionRectangleCircle(rectangle, circle) {
-    //order should be irrelevant, FIX!
+    if (rectangle.type == "circle") {
+        let swap = rectangle;
+        rectangle = circle;
+        circle = swap;
+    }
     let xborder = circle.x;
     let yborder = circle.y;
     if (circle.x < rectangle.x)
@@ -322,3 +326,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
 window.addEventListener('load', (event) => {
     start();
 });
+let controller = new GameObjectController();
+for (let i = 0; i < controller.objects.length; i++) {
+    console.log(controller.objects[i] + " is type " + typeof (controller.objects[i]));
+}
