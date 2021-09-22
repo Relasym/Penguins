@@ -4,8 +4,10 @@
         "noImplicitAny" : true
     },
     "files": [
-        "main.ts",
-        "gameObjects.ts",
-        "levels.ts"
+        "engine/main.ts",
+        "engine/gameObjects.ts",
+        "engine/level.ts",
+        "penguins/penguinlevel.ts",
+        "penguins/penguinobjects.ts",
     ]
 }
