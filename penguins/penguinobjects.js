@@ -48,6 +48,9 @@ class Fish extends Actor {
 class Shark extends Actor {
     constructor(owner, definition, type, color) {
         super(owner, definition, type, color);
+        this.targetAge = 0; //time in ms since target was selected
+        this.maxTrackingTime = 0; //time in ms to track current target
+        this.retargetingDelay = 500; //time in ms until shark actually tracks
         this.frictionPerSecond = 0.002;
         this.sharkAccelerationFactor = 2; // acceleration per distance from player per second
         this.image = sharkImage;
@@ -74,14 +77,39 @@ class Shark extends Actor {
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
+        this.targetAge += currentFrameDuration;
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
         }
         else {
             this.affectedByGravity = false;
-            if (this.owner.objectsByFaction[1].size > 0) {
-                this.velocity.x += (this.owner.player.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (this.owner.player.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null) {
+                if (this.owner.player != null && this.distanceTo(this.owner.player) < 500) {
+                    this.currentTarget = this.owner.player;
+                    this.targetAge = 0;
+                    this.maxTrackingTime = 500 + Math.random() * 1000;
+                }
+                else if (this.currentTarget == null) {
+                    //find new target
+                    let attempts = 0;
+                    for (let fish of this.owner.objectsByFaction[2]) {
+                        attempts++;
+                        if (this.distanceTo(fish) < attempts * 50) {
+                            this.currentTarget = fish;
+                            this.targetAge = 0;
+                            this.maxTrackingTime = 1000 + Math.random() * 5000;
+                            break;
+                        }
+                    }
+                    if (this.currentTarget == null) {
+                        //still no target? go after the player
+                        this.currentTarget = this.owner.player;
+                    }
+                }
+            }
+            if (this.targetAge > this.retargetingDelay) {
+                this.velocity.x += (this.currentTarget.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.currentTarget.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
         //friction

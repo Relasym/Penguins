@@ -227,6 +227,9 @@ function handleCollisions(objectsByFaction: any, projectilesByFaction: any): voi
                                 object2.startDestruction();
                                 fishcounter++;
                             }
+                            if (object1.constructor.name == "Fish" && object2.constructor.name == "Shark") {
+                                object1.startDestruction();
+                            }
                             if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
                                 object1.startDestruction();
                                 document.getElementById("menuline2").innerHTML = "Game Over!";

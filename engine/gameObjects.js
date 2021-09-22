@@ -41,6 +41,9 @@ class BasicObject {
             this.deregister();
         }
     }
+    distanceTo(object) {
+        return vectorLength({ x: this.definition.x - object.definition.x, y: this.definition.y - object.definition.y });
+    }
 }
 //basic object with drawing and optional image
 class DrawableObject extends BasicObject {

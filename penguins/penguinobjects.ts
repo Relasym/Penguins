@@ -2,7 +2,7 @@
 //moves and scares other fish when it gets eaten
 class Fish extends Actor {
     constructor(owner: Level, definition: definition, type: String, color: color) {
-        super(owner,definition, type, color)
+        super(owner, definition, type, color)
         this.image = fishImage;
     }
 
@@ -54,6 +54,10 @@ class Fish extends Actor {
 
 //follows the player, not very accurately
 class Shark extends Actor {
+    currentTarget: BasicInterface; //current target to hunt
+    targetAge = 0; //time in ms since target was selected
+    maxTrackingTime = 0; //time in ms to track current target
+    retargetingDelay=500; //time in ms until shark actually tracks
     frictionPerSecond = 0.002;
     sharkAccelerationFactor = 2; // acceleration per distance from player per second
     constructor(owner: Level, definition: definition, type: String, color: color) {
@@ -85,15 +89,43 @@ class Shark extends Actor {
 
     update(currentFrameDuration: number): void {
         super.update(currentFrameDuration);
+        this.targetAge += currentFrameDuration;
 
         if (this.definition.y < 0) {
             this.affectedByGravity = true;
         } else {
             this.affectedByGravity = false;
-            if (this.owner.objectsByFaction[1].size > 0) {
-                this.velocity.x += (this.owner.player.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (this.owner.player.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null) {
+                if (this.owner.player != null && this.distanceTo(this.owner.player) < 500) {
+                    this.currentTarget = this.owner.player;
+                    this.targetAge = 0;
+                    this.maxTrackingTime = 500 + Math.random() * 1000;
+                }
+                else if (this.currentTarget == null) {
+                    //find new target
+                    let attempts = 0;
+                    for (let fish of this.owner.objectsByFaction[2]) {
+                        attempts++;
+                        if (this.distanceTo(fish) < attempts * 50) {
+                            this.currentTarget = fish;
+                            this.targetAge = 0;
+                            this.maxTrackingTime = 1000 + Math.random() * 5000;
+                            break;
+                        }
+                    }
+                    if (this.currentTarget == null) {
+                        //still no target? go after the player
+                        this.currentTarget = this.owner.player;
+                    }
+                }
             }
+
+            if(this.targetAge>this.retargetingDelay){
+                this.velocity.x += (this.currentTarget.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.currentTarget.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+            }
+
+        
         }
 
         //friction

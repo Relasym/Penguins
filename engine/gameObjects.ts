@@ -63,6 +63,9 @@ class BasicObject implements BasicInterface{
             this.deregister();
         }
     }
+    distanceTo(object : BasicInterface): number {
+        return vectorLength({x:this.definition.x-object.definition.x,y:this.definition.y-object.definition.y})
+    }
 }
 
 
