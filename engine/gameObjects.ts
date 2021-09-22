@@ -17,6 +17,7 @@ type color = {
 interface BasicInterface {
     definition: definition;
     velocity: {x: any,y: any};
+    isDestroying: boolean;
 }
 
 //basic object, includes register/deregister and destruction

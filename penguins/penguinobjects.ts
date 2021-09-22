@@ -57,9 +57,9 @@ class Shark extends Actor {
     currentTarget: BasicInterface; //current target to hunt
     targetAge = 0; //time in ms since target was selected
     maxTrackingTime = 0; //time in ms to track current target
-    retargetingDelay=500; //time in ms until shark actually tracks
-    frictionPerSecond = 0.002;
-    sharkAccelerationFactor = 2; // acceleration per distance from player per second
+    retargetingDelay = 500; //time in ms until shark actually tracks
+    frictionPerSecond = 0.005;
+    sharkAccelerationFactor = 3; // acceleration per distance from player per second
     constructor(owner: Level, definition: definition, type: String, color: color) {
         super(owner, definition, type, color);
         this.image = sharkImage;
@@ -95,37 +95,14 @@ class Shark extends Actor {
             this.affectedByGravity = true;
         } else {
             this.affectedByGravity = false;
-            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null) {
-                if (this.owner.player != null && this.distanceTo(this.owner.player) < 200) {
-                    this.currentTarget = this.owner.player;
-                    this.targetAge = 0;
-                    this.maxTrackingTime = 2000 + Math.random() * 3000;
-                }
-                else if (this.currentTarget == null) {
-                    //find new target, choose nearby fish, but get less picky with each attempt
-                    let attempts = 0;
-                    for (let fish of this.owner.objectsByFaction[2]) {
-                        attempts++;
-                        if (this.distanceTo(fish) < attempts * 50) {
-                            this.currentTarget = fish;
-                            this.targetAge = 0;
-                            this.maxTrackingTime = 2000 + Math.random() * 3000;
-                            break;
-                        }
-                    }
-                    if (this.currentTarget == null) {
-                        //still no target? go after the player
-                        this.currentTarget = this.owner.player;
-                    }
-                }
+            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null || this.currentTarget.isDestroying) {
+                this.currentTarget=null;
+                this.findNewTarget();
             }
-
-            if(this.targetAge>this.retargetingDelay){
+            if (this.targetAge > this.retargetingDelay) {
                 this.velocity.x += (this.currentTarget.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
                 this.velocity.y += (this.currentTarget.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
-
-        
         }
 
         //friction
@@ -136,6 +113,33 @@ class Shark extends Actor {
             this.velocity.y *= 1 - (friction);
         }
 
+    }
+
+    findNewTarget() {
+        if (this.owner.player != null && this.distanceTo(this.owner.player) < 200) {
+            this.currentTarget = this.owner.player;
+            this.startTrackingTimers();
+        }
+        else if (this.currentTarget == null) {
+            //find new target, choose nearby fish, but get less picky with each attempt
+            let attempts = 0;
+            for (let fish of this.owner.objectsByFaction[2]) {
+                attempts++;
+                if (this.distanceTo(fish) < attempts * 50) {
+                    this.currentTarget = fish;
+                    this.startTrackingTimers();
+                    break;
+                }
+            }
+            if (this.currentTarget == null) {
+                //still no target? go after the player
+                this.currentTarget = this.owner.player;
+            }
+        }
+    }
+    startTrackingTimers() {
+        this.targetAge = 0;
+        this.maxTrackingTime = 2000 + Math.random() * 3000;
     }
 
 }
@@ -198,9 +202,9 @@ class Player extends Actor {
         //create bubbles
         if (this.definition.y > 0 && Math.random() < vectorLength(this.velocity) / this.allBubbleSpeed) {
             let x = this.definition.x + this.definition.width / 2 - this.definition.height * 0.8 / 2 * Math.sin(this.rotation);
-            let y = this.definition.y + this.definition.height /2 + this.definition.height * 0.9 / 2 * Math.cos(this.rotation);
+            let y = this.definition.y + this.definition.height / 2 + this.definition.height * 0.9 / 2 * Math.cos(this.rotation);
             let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
-            let bubble = new MovingObject(this.owner,{ x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
+            let bubble = new MovingObject(this.owner, { x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);

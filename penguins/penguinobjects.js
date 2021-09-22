@@ -51,8 +51,8 @@ class Shark extends Actor {
         this.targetAge = 0; //time in ms since target was selected
         this.maxTrackingTime = 0; //time in ms to track current target
         this.retargetingDelay = 500; //time in ms until shark actually tracks
-        this.frictionPerSecond = 0.002;
-        this.sharkAccelerationFactor = 2; // acceleration per distance from player per second
+        this.frictionPerSecond = 0.005;
+        this.sharkAccelerationFactor = 3; // acceleration per distance from player per second
         this.image = sharkImage;
     }
     draw() {
@@ -83,29 +83,9 @@ class Shark extends Actor {
         }
         else {
             this.affectedByGravity = false;
-            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null) {
-                if (this.owner.player != null && this.distanceTo(this.owner.player) < 200) {
-                    this.currentTarget = this.owner.player;
-                    this.targetAge = 0;
-                    this.maxTrackingTime = 2000 + Math.random() * 3000;
-                }
-                else if (this.currentTarget == null) {
-                    //find new target, choose nearby fish, but get less picky with each attempt
-                    let attempts = 0;
-                    for (let fish of this.owner.objectsByFaction[2]) {
-                        attempts++;
-                        if (this.distanceTo(fish) < attempts * 50) {
-                            this.currentTarget = fish;
-                            this.targetAge = 0;
-                            this.maxTrackingTime = 2000 + Math.random() * 3000;
-                            break;
-                        }
-                    }
-                    if (this.currentTarget == null) {
-                        //still no target? go after the player
-                        this.currentTarget = this.owner.player;
-                    }
-                }
+            if (this.targetAge > this.maxTrackingTime || this.currentTarget == null || this.currentTarget.isDestroying) {
+                this.currentTarget = null;
+                this.findNewTarget();
             }
             if (this.targetAge > this.retargetingDelay) {
                 this.velocity.x += (this.currentTarget.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
@@ -119,6 +99,32 @@ class Shark extends Actor {
             this.velocity.x *= 1 - (friction);
             this.velocity.y *= 1 - (friction);
         }
+    }
+    findNewTarget() {
+        if (this.owner.player != null && this.distanceTo(this.owner.player) < 200) {
+            this.currentTarget = this.owner.player;
+            this.startTrackingTimers();
+        }
+        else if (this.currentTarget == null) {
+            //find new target, choose nearby fish, but get less picky with each attempt
+            let attempts = 0;
+            for (let fish of this.owner.objectsByFaction[2]) {
+                attempts++;
+                if (this.distanceTo(fish) < attempts * 50) {
+                    this.currentTarget = fish;
+                    this.startTrackingTimers();
+                    break;
+                }
+            }
+            if (this.currentTarget == null) {
+                //still no target? go after the player
+                this.currentTarget = this.owner.player;
+            }
+        }
+    }
+    startTrackingTimers() {
+        this.targetAge = 0;
+        this.maxTrackingTime = 2000 + Math.random() * 3000;
     }
 }
 //a very hungry penguin
