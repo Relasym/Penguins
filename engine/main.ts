@@ -61,8 +61,8 @@ function start(): void {
     document.getElementById("type1").textContent = "allObjects: ";
     document.getElementById("type2").textContent = "drawableObjects: ";
     document.getElementById("type3").textContent = "updateableObjects: ";
-    document.getElementById("type4").textContent = "collisionObjects: ";
-    document.getElementById("type5").textContent = "terrainObjects: ";
+    document.getElementById("type4").textContent = "Fish: ";
+    document.getElementById("type5").textContent = "Sharks: ";
     document.getElementById("type6").textContent = "collisionChecks: ";
     document.getElementById("type7").textContent = "";
     document.getElementById("type8").textContent = "Player Speed: ";
@@ -146,6 +146,8 @@ function drawLoop(): void {
         // document.getElementById("value1").textContent = allObjects.length.toString();
         document.getElementById("value2").textContent = currentLevel.drawableObjects.size.toString();
         document.getElementById("value3").textContent = currentLevel.updateableObjects.size.toString();
+        document.getElementById("value4").textContent = currentLevel.objectsByFaction[2].size.toString();
+        document.getElementById("value5").textContent =currentLevel.objectsByFaction[3].size.toString();
         document.getElementById("value7").textContent = collisionChecks.toString();
         if (currentLevel.objectsByFaction[1].size > 0) {
             document.getElementById("value8").textContent = Math.round(vectorLength(currentLevel.player.velocity)).toString();

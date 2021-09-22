@@ -87,8 +87,8 @@ class PenguinLevel extends Level{
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
-        player.velocity.x = 25;
-        player.velocity.y = 25;
+        player.velocity.x = 0;
+        player.velocity.y = 0;
         player.register();
         this.player = player;
 
