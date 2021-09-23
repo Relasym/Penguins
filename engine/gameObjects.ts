@@ -1,5 +1,5 @@
 //defines position and size, according to object.type
-type definition = {
+type shape = {
     x: number;
     y: number;
     width?: number;
@@ -15,14 +15,14 @@ type color = {
 }
 
 interface BasicInterface {
-    definition: definition;
+    shape: shape;
     velocity: {x: any,y: any};
     isDestroying: boolean;
 }
 
 //basic object, includes register/deregister and destruction
 class BasicObject implements BasicInterface{
-    definition : definition;
+    shape : shape;
     velocity: {x:number,y:number};
     faction: number;
     hasCollision = false;
@@ -65,7 +65,7 @@ class BasicObject implements BasicInterface{
         }
     }
     distanceTo(object : BasicInterface): number {
-        return vectorLength({x:this.definition.x-object.definition.x,y:this.definition.y-object.definition.y})
+        return vectorLength({x:this.shape.x-object.shape.x,y:this.shape.y-object.shape.y})
     }
 }
 
@@ -77,11 +77,11 @@ class DrawableObject extends BasicObject {
     isDrawable = true;
     hasCollision = true;
     rotation = 0;
-    definition: definition;
+    shape: shape;
     color: color;
-    constructor(owner: Level, definition: definition, type: String, color: color) {
+    constructor(owner: Level, shape: shape, type: String, color: color) {
         super(owner)
-        this.definition = definition;
+        this.shape = shape;
         this.type = type;
         this.color = color;
         this.image = new Image();
@@ -90,7 +90,7 @@ class DrawableObject extends BasicObject {
         if (this.type == "circle") {
             //todo add images for circle types
             this.owner.context.beginPath();
-            this.owner.context.arc(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.radius, 0, Math.PI * 2, false);
+            this.owner.context.arc(this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.radius, 0, Math.PI * 2, false);
             if (this.isDestroying) {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             } else {
@@ -105,12 +105,12 @@ class DrawableObject extends BasicObject {
             } else {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
-            this.owner.context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
+            this.owner.context.translate(this.shape.x + this.shape.width / 2, this.shape.y + this.shape.height / 2);
             this.owner.context.rotate(this.rotation);
-            this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2), -1 * (this.definition.y + this.definition.height / 2));
-            this.owner.context.fillRect(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+            this.owner.context.translate(-1 * (this.shape.x + this.shape.width / 2), -1 * (this.shape.y + this.shape.height / 2));
+            this.owner.context.fillRect(this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
             if (this.image != null) {
-                this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+                this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
             }
             this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         }
@@ -125,8 +125,8 @@ class MovingObject extends DrawableObject {
     movesWhileDestroying = false;
     velocity = { x: 0, y: 0 };
 
-    constructor(owner: Level, definition: definition, type: String, color: color) {
-        super(owner, definition, type, color);
+    constructor(owner: Level, shape: shape, type: String, color: color) {
+        super(owner, shape, type, color);
     }
 
     update(currentFrameDuration: number): void {
@@ -135,8 +135,8 @@ class MovingObject extends DrawableObject {
             this.velocity.y += gravity * currentFrameDuration / 1000;
         }
         if (!this.isDestroying || this.movesWhileDestroying) {
-            this.definition.x += this.velocity.x * currentFrameDuration / 1000;
-            this.definition.y += this.velocity.y * currentFrameDuration / 1000;
+            this.shape.x += this.velocity.x * currentFrameDuration / 1000;
+            this.shape.y += this.velocity.y * currentFrameDuration / 1000;
         }
 
     }
@@ -147,8 +147,8 @@ class Actor extends MovingObject {
     refireDelay = 1000; //ms
     lastFire = 0;
 
-    constructor(owner: Level, definition: definition, type: String, color: color) {
-        super(owner, definition, type, color);
+    constructor(owner: Level, shape: shape, type: String, color: color) {
+        super(owner, shape, type, color);
     }
     register(): void {
         super.register();
@@ -164,8 +164,8 @@ class Actor extends MovingObject {
 //basic projectile, not doing much
 class Projectile extends MovingObject {
     hasCollision = true;
-    constructor(owner: Level, definition: definition, type: String, color: color) {
-        super(owner, definition, type, color);
+    constructor(owner: Level, shape: shape, type: String, color: color) {
+        super(owner, shape, type, color);
     }
     draw(): void {
         super.draw();

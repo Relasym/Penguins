@@ -42,17 +42,17 @@ class BasicObject {
         }
     }
     distanceTo(object) {
-        return vectorLength({ x: this.definition.x - object.definition.x, y: this.definition.y - object.definition.y });
+        return vectorLength({ x: this.shape.x - object.shape.x, y: this.shape.y - object.shape.y });
     }
 }
 //basic object with drawing and optional image
 class DrawableObject extends BasicObject {
-    constructor(owner, definition, type, color) {
+    constructor(owner, shape, type, color) {
         super(owner);
         this.isDrawable = true;
         this.hasCollision = true;
         this.rotation = 0;
-        this.definition = definition;
+        this.shape = shape;
         this.type = type;
         this.color = color;
         this.image = new Image();
@@ -61,7 +61,7 @@ class DrawableObject extends BasicObject {
         if (this.type == "circle") {
             //todo add images for circle types
             this.owner.context.beginPath();
-            this.owner.context.arc(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.radius, 0, Math.PI * 2, false);
+            this.owner.context.arc(this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.radius, 0, Math.PI * 2, false);
             if (this.isDestroying) {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             }
@@ -77,12 +77,12 @@ class DrawableObject extends BasicObject {
             else {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
             }
-            this.owner.context.translate(this.definition.x + this.definition.width / 2, this.definition.y + this.definition.height / 2);
+            this.owner.context.translate(this.shape.x + this.shape.width / 2, this.shape.y + this.shape.height / 2);
             this.owner.context.rotate(this.rotation);
-            this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2), -1 * (this.definition.y + this.definition.height / 2));
-            this.owner.context.fillRect(this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+            this.owner.context.translate(-1 * (this.shape.x + this.shape.width / 2), -1 * (this.shape.y + this.shape.height / 2));
+            this.owner.context.fillRect(this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
             if (this.image != null) {
-                this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+                this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
             }
             this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         }
@@ -90,8 +90,8 @@ class DrawableObject extends BasicObject {
 }
 //moving object, gravity can be turned on and off
 class MovingObject extends DrawableObject {
-    constructor(owner, definition, type, color) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color) {
+        super(owner, shape, type, color);
         this.affectedByGravity = false;
         this.isUpdateable = true;
         this.movesWhileDestroying = false;
@@ -103,15 +103,15 @@ class MovingObject extends DrawableObject {
             this.velocity.y += gravity * currentFrameDuration / 1000;
         }
         if (!this.isDestroying || this.movesWhileDestroying) {
-            this.definition.x += this.velocity.x * currentFrameDuration / 1000;
-            this.definition.y += this.velocity.y * currentFrameDuration / 1000;
+            this.shape.x += this.velocity.x * currentFrameDuration / 1000;
+            this.shape.y += this.velocity.y * currentFrameDuration / 1000;
         }
     }
 }
 //what was this even for???
 class Actor extends MovingObject {
-    constructor(owner, definition, type, color) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color) {
+        super(owner, shape, type, color);
         this.refireDelay = 1000; //ms
         this.lastFire = 0;
     }
@@ -124,8 +124,8 @@ class Actor extends MovingObject {
 }
 //basic projectile, not doing much
 class Projectile extends MovingObject {
-    constructor(owner, definition, type, color) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color) {
+        super(owner, shape, type, color);
         this.hasCollision = true;
     }
     draw() {

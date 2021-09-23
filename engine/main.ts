@@ -276,7 +276,7 @@ function areObjectsColliding(object1: any, object2: any): boolean {
         }
     } else {
         if (type2 = "rectangle") {
-            return collisionRectangleCircle(object2, object1); //<- IMPORTANT todo order should be irrelevant, fix this
+            return collisionRectangleCircle(object2, object1);
         } else {
             return collisionCircleCircle(object1, object2);
         }
@@ -284,10 +284,10 @@ function areObjectsColliding(object1: any, object2: any): boolean {
 }
 
 function collisionRectangleRectangle(rectangle1: any, rectangle2: any): boolean {
-    return (rectangle1.definition.x < rectangle2.definition.x + rectangle2.definition.width &&
-        rectangle1.definition.x + rectangle1.definition.width > rectangle2.definition.x &&
-        rectangle1.definition.y < rectangle2.definition.y + rectangle2.definition.height &&
-        rectangle1.definition.y + rectangle1.definition.height > rectangle2.definition.y)
+    return (rectangle1.shape.x < rectangle2.shape.x + rectangle2.shape.width &&
+        rectangle1.shape.x + rectangle1.shape.width > rectangle2.shape.x &&
+        rectangle1.shape.y < rectangle2.shape.y + rectangle2.shape.height &&
+        rectangle1.shape.y + rectangle1.shape.height > rectangle2.shape.y)
 }
 function collisionRectangleCircle(rectangle: any, circle: any): boolean {
     if(rectangle.type=="circle") {

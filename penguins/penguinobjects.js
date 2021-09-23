@@ -1,7 +1,7 @@
 //moves and scares other fish when it gets eaten
 class Fish extends Actor {
-    constructor(owner, definition, type, color) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color) {
+        super(owner, shape, type, color);
         this.image = fishImage;
     }
     draw() {
@@ -20,13 +20,13 @@ class Fish extends Actor {
         // if (this.velocity.x < 0) {
         //     context.scale(-1, 1);
         // }
-        this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         this.owner.context.restore();
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
-        if (this.definition.y < 0) {
+        if (this.shape.y < 0) {
             this.affectedByGravity = true;
         }
         else {
@@ -36,18 +36,18 @@ class Fish extends Actor {
     startDestruction() {
         super.startDestruction();
         for (let object of this.owner.objectsByFaction[this.faction]) {
-            let distance = vectorLength({ x: object.definition.x - this.definition.x, y: object.definition.y - this.definition.y });
+            let distance = vectorLength({ x: object.shape.x - this.shape.x, y: object.shape.y - this.shape.y });
             if (distance < 200) {
-                object.velocity.x += (this.definition.x - object.definition.x) * -50 / distance;
-                object.velocity.y += (this.definition.y - object.definition.y) * -50 / distance;
+                object.velocity.x += (this.shape.x - object.shape.x) * -50 / distance;
+                object.velocity.y += (this.shape.y - object.shape.y) * -50 / distance;
             }
         }
     }
 }
 //follows the player, not very accurately
 class Shark extends Actor {
-    constructor(owner, definition, type, color) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color) {
+        super(owner, shape, type, color);
         this.targetAge = 0; //time in ms since target was selected
         this.maxTrackingTime = 0; //time in ms to track current target
         this.retargetingDelay = 500; //time in ms until shark actually tracks
@@ -71,14 +71,14 @@ class Shark extends Actor {
         // if (this.velocity.x > 0) {
         //     context.scale(-1, 1);
         // }
-        this.owner.context.drawImage(this.image, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
         this.owner.context.restore();
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
         this.targetAge += currentFrameDuration;
-        if (this.definition.y < 0) {
+        if (this.shape.y < 0) {
             this.affectedByGravity = true;
         }
         else {
@@ -88,12 +88,12 @@ class Shark extends Actor {
                 this.findNewTarget();
             }
             if (this.targetAge > this.retargetingDelay) {
-                this.velocity.x += (this.currentTarget.definition.x - this.definition.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
-                this.velocity.y += (this.currentTarget.definition.y - this.definition.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.x += (this.currentTarget.shape.x - this.shape.x) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
+                this.velocity.y += (this.currentTarget.shape.y - this.shape.y) * this.sharkAccelerationFactor * currentFrameDuration / 1000;
             }
         }
         //friction
-        if (this.definition.y > 0) {
+        if (this.shape.y > 0) {
             let friction = vectorLength(this.velocity) * this.frictionPerSecond * currentFrameDuration / 1000;
             //this doesn't give quite the same friction for every framerate, but it's a reasonable approximation
             this.velocity.x *= 1 - (friction);
@@ -129,8 +129,8 @@ class Shark extends Actor {
 }
 //a very hungry penguin
 class Player extends Actor {
-    constructor(owner, definition, type, color, speed) {
-        super(owner, definition, type, color);
+    constructor(owner, shape, type, color, speed) {
+        super(owner, shape, type, color);
         this.rotationSpeed = Math.PI * 2.0; //radians per second
         this.maxspeed = 5000; //units (currently ==pixels) per second
         this.refireDelay = 50; //ms
@@ -145,7 +145,7 @@ class Player extends Actor {
         super.update(currentFrameDuration);
         // this.velocity = { x: 0, y: 0 }
         //control
-        if (this.definition.y < 0) {
+        if (this.shape.y < 0) {
             this.affectedByGravity = true;
             if (currentInputs.has("a")) {
                 this.rotation -= this.rotationSpeed * currentFrameDuration / 1000;
@@ -184,9 +184,9 @@ class Player extends Actor {
             // }
         }
         //create bubbles
-        if (this.definition.y > 0 && Math.random() < vectorLength(this.velocity) / this.allBubbleSpeed) {
-            let x = this.definition.x + this.definition.width / 2 - this.definition.height * 0.8 / 2 * Math.sin(this.rotation);
-            let y = this.definition.y + this.definition.height / 2 + this.definition.height * 0.9 / 2 * Math.cos(this.rotation);
+        if (this.shape.y > 0 && Math.random() < vectorLength(this.velocity) / this.allBubbleSpeed) {
+            let x = this.shape.x + this.shape.width / 2 - this.shape.height * 0.8 / 2 * Math.sin(this.rotation);
+            let y = this.shape.y + this.shape.height / 2 + this.shape.height * 0.9 / 2 * Math.cos(this.rotation);
             let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
             let bubble = new MovingObject(this.owner, { x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
@@ -202,15 +202,15 @@ class Player extends Actor {
             this.velocity = normalizeVector(this.velocity);
         }
         //friction
-        if (this.definition.y > 0) {
+        if (this.shape.y > 0) {
             let friction = vectorLength(this.velocity) * this.frictionPerSecond * currentFrameDuration / 1000;
             //this doesn't give quite the same friction for every framerate, but it's a reasonable approximation
             this.velocity.x *= 1 - (friction);
             this.velocity.y *= 1 - (friction);
         }
         //movement
-        this.definition.x += this.velocity.x * currentFrameDuration / 1000;
-        this.definition.y += this.velocity.y * currentFrameDuration / 1000;
+        this.shape.x += this.velocity.x * currentFrameDuration / 1000;
+        this.shape.y += this.velocity.y * currentFrameDuration / 1000;
     }
     draw() {
         if (this.isDestroying) {
@@ -228,10 +228,10 @@ class Player extends Actor {
         reset transformation matrix
         */
         // context.fillRect(this.x, this.y, this.width, this.height);
-        this.owner.context.translate(this.definition.x + this.definition.width / 2 - this.owner.camera.x, this.definition.y + this.definition.height / 2 - this.owner.camera.y);
+        this.owner.context.translate(this.shape.x + this.shape.width / 2 - this.owner.camera.x, this.shape.y + this.shape.height / 2 - this.owner.camera.y);
         this.owner.context.rotate(this.rotation);
-        this.owner.context.translate(-1 * (this.definition.x + this.definition.width / 2 - this.owner.camera.x), -1 * (this.definition.y + this.definition.height / 2 - this.owner.camera.y));
-        this.owner.context.drawImage(this.image, 55, 0, 115, 200, this.definition.x - this.owner.camera.x, this.definition.y - this.owner.camera.y, this.definition.width, this.definition.height);
+        this.owner.context.translate(-1 * (this.shape.x + this.shape.width / 2 - this.owner.camera.x), -1 * (this.shape.y + this.shape.height / 2 - this.owner.camera.y));
+        this.owner.context.drawImage(this.image, 55, 0, 115, 200, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
         this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
     }
 }

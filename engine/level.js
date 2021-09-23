@@ -27,8 +27,8 @@ class Level {
             object.update(currentFrameDuration);
         });
         if (this.player != null) {
-            this.camera.x = this.player.definition.x - 400 + this.player.definition.width / 2;
-            this.camera.y = this.player.definition.y - 300 + this.player.definition.height / 2;
+            this.camera.x = this.player.shape.x - 400 + this.player.shape.width / 2;
+            this.camera.y = this.player.shape.y - 300 + this.player.shape.height / 2;
         }
         //collision testing last
         handleCollisions(this.objectsByFaction, this.projectilesByFaction);
