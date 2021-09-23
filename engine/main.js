@@ -7,6 +7,9 @@ const currentInputs = new Set();
 const destructionTime = 300; //ms
 const oceanColour = { r: 124, g: 233, b: 252, a: 1 };
 const skyColour = { r: 204, g: 233, b: 252, a: 1 };
+const levelAmount = 4;
+const levels = new Array(levelAmount);
+var currentLevel;
 let camera = { x: 0, y: 0 }; //set to player position + screensize offset while running
 const fishSpawnDelay = 1000; //ms
 const sharkSpawnDelay = 5000; //ms
@@ -15,7 +18,6 @@ const simulationFPSArray = new Array();
 let simulationFPSAverage = 0;
 const simulationTPF = 1000 / simulationFPS; //ms
 let currentFrameDuration = 0;
-var currentLevel;
 let fishcounter = 0; //fish eaten
 let isPaused = false;
 const penguinSrc = "https://www.freeiconspng.com/uploads/penguin-png-5.png";
@@ -48,7 +50,8 @@ function start() {
     document.getElementById("type8").textContent = "Player Speed: ";
     document.getElementById("type9").textContent = "Fish eaten: ";
     document.getElementById("type10").textContent = "Frametime: ";
-    currentLevel = new PenguinLevel(context);
+    currentLevel = 0;
+    levels[0] = new PenguinLevel(context);
     //draw empty frame behind menu
     context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -66,7 +69,7 @@ function logicLoop() {
         if (currentFrameDuration > simulationTPF - 10) {
             // let animationStartTime = performance.now();
             collisionChecks = 0;
-            currentLevel.update(currentFrameDuration);
+            levels[currentLevel].update(currentFrameDuration);
             //collision testing last
             // handleCollisions();
             lastFrameTime = performance.now();
@@ -98,21 +101,21 @@ function drawLoop() {
         });
         context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
         context.fillRect(0, 0, canvas.width, canvas.height);
-        currentLevel.draw();
+        levels[currentLevel].draw();
         //update stats
         // document.getElementById("value1").textContent = allObjects.length.toString();
-        document.getElementById("value2").textContent = currentLevel.drawableObjects.size.toString();
-        document.getElementById("value3").textContent = currentLevel.updateableObjects.size.toString();
-        document.getElementById("value4").textContent = currentLevel.objectsByFaction[2].size.toString();
-        document.getElementById("value5").textContent = currentLevel.objectsByFaction[3].size.toString();
+        document.getElementById("value2").textContent = levels[currentLevel].drawableObjects.size.toString();
+        document.getElementById("value3").textContent = levels[currentLevel].updateableObjects.size.toString();
+        document.getElementById("value4").textContent = levels[currentLevel].objectsByFaction[2].size.toString();
+        document.getElementById("value5").textContent = levels[currentLevel].objectsByFaction[3].size.toString();
         document.getElementById("value7").textContent = collisionChecks.toString();
-        if (currentLevel.objectsByFaction[1].size > 0) {
-            document.getElementById("value8").textContent = Math.round(vectorLength(currentLevel.player.velocity)).toString();
+        if (levels[currentLevel].objectsByFaction[1].size > 0) {
+            document.getElementById("value8").textContent = Math.round(vectorLength(levels[currentLevel].player.velocity)).toString();
         }
         document.getElementById("value9").textContent = fishcounter.toString();
         // document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
         document.getElementById("value10").textContent = Math.round(simulationFPSAverage).toString();
-        document.getElementById("fishcounter").textContent = fishcounter.toString();
+        document.getElementById("fishcounter").textContent = levels[currentLevel].fishCounter.toString();
     }
 }
 /*collision functions */
@@ -265,8 +268,17 @@ document.addEventListener('keydown', (keypress) => {
     if (keypress.key == "Escape") {
         togglePause();
     }
+    if (keypress.key == "1") {
+        activateOrCreateLevel(1);
+    }
+    if (keypress.key == "2") {
+        activateOrCreateLevel(2);
+    }
+    if (keypress.key == "3") {
+        activateOrCreateLevel(3);
+    }
     if (keypress.key == "r") {
-        currentLevel = new PenguinLevel(context);
+        levels[currentLevel] = new PenguinLevel(context);
     }
     // console.log(currentInputs);
 });
@@ -287,6 +299,12 @@ pauseButton.addEventListener("click", function () {
     togglePause();
     this.blur(); //unfocus so spacebar can't trigger pause
 });
+function activateOrCreateLevel(number) {
+    if (levels[number] == null) {
+        levels[number] = new PenguinLevel(context);
+    }
+    currentLevel = number;
+}
 function togglePause() {
     pauseMenu.classList.toggle("visible");
     lastFrameTime = performance.now();
@@ -294,9 +312,9 @@ function togglePause() {
     pauseButton.textContent = "Continue";
     // console.log("Current Objects: ");
     // console.log(objectsByFaction);
-    if (currentLevel.objectsByFaction[1].size == 0) {
+    if (levels[currentLevel].objectsByFaction[1].size == 0) {
         console.info("Restarting");
-        currentLevel = new Level(context);
+        levels[currentLevel] = new PenguinLevel(context);
         start();
         togglePause();
         pauseButton.textContent = "Restart";

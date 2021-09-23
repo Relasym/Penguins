@@ -6,7 +6,7 @@ class PenguinLevel extends Level {
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
         this.start();
-        this.fishEaten = 0;
+        this.fishCounter = 0;
     }
     draw() {
         this.drawableObjects.forEach((object) => {

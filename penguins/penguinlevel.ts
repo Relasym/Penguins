@@ -4,14 +4,14 @@ class PenguinLevel extends Level{
     sharkSpawnTimer: number; //time since last shark spawn
     fishSpawnDelay: number = 1000; //ms
     sharkSpawnDelay: number = 5000; //ms
-    fishEaten: number;
+    fishCounter: number;
 
     constructor(context: CanvasRenderingContext2D) {
         super(context);
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
         this.start();
-        this.fishEaten=0;
+        this.fishCounter=0;
     }
 
     draw() {
