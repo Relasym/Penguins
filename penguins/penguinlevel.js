@@ -46,6 +46,9 @@ class PenguinLevel extends Level {
         totalRuntime = 0;
         fishSpawnTimer = 0;
         sharkSpawnTimer = 0;
+        //draw empty frame behind menu
+        context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
         //create Sky
         //todo: this should be an object without collision
         for (let i = 0; i < 1; i++) {

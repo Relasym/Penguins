@@ -7,6 +7,7 @@ class Level {
         this.factionAmount = 10; //realistically no more than 4-5 (0: terrain, 1: player, rest: other)
         this.objectsByFaction = [];
         this.projectilesByFaction = [];
+        this.gravity = 300;
         this.context = context;
         for (let i = 0; i < this.factionAmount; i++) {
             this.projectilesByFaction.push(new Set());
@@ -16,6 +17,17 @@ class Level {
         this.camera = { x: 0, y: 0 };
     }
     draw() {
+        //depth-dependent color calculation
+        let color = [124, 233, 252];
+        let newcolor = color.map((color) => {
+            let depth = Math.max(0, camera.y);
+            let maxdepth = 2500;
+            let remainingdepth = maxdepth - depth;
+            color = color * remainingdepth / maxdepth;
+            return color;
+        });
+        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
         this.drawableObjects.forEach((object) => {
             object.draw();
         });

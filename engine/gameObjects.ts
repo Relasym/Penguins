@@ -132,7 +132,7 @@ class MovingObject extends DrawableObject {
     update(currentFrameDuration: number): void {
         super.update(currentFrameDuration);
         if (this.affectedByGravity) {
-            this.velocity.y += gravity * currentFrameDuration / 1000;
+            this.velocity.y += this.owner.gravity * currentFrameDuration / 1000;
         }
         if (!this.isDestroying || this.movesWhileDestroying) {
             this.shape.x += this.velocity.x * currentFrameDuration / 1000;

@@ -1,12 +1,7 @@
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const startTime = performance.now();
-const gravity = 500; // units/s^2
-const bounceRatio = 0.8;
 const currentInputs = new Set();
-const destructionTime = 300; //ms
-const oceanColour = { r: 124, g: 233, b: 252, a: 1 };
-const skyColour = { r: 204, g: 233, b: 252, a: 1 };
 const levelAmount= 4;
 const levels= new Array(levelAmount);
 var currentLevel: number;
@@ -18,32 +13,13 @@ type vector = {
 
 let camera: camera = { x: 0, y: 0 }; //set to player position + screensize offset while running
 
-const fishSpawnDelay = 1000; //ms
-const sharkSpawnDelay = 5000; //ms
-
 const simulationFPS = 60; //frames per second
 const simulationFPSArray: number[] = new Array();
 let simulationFPSAverage: number = 0;
 const simulationTPF = 1000 / simulationFPS; //ms
 let currentFrameDuration = 0;
 
-
-
-
-let fishcounter = 0; //fish eaten
 let isPaused: boolean = false;
-
-
-const penguinSrc: string = "https://www.freeiconspng.com/uploads/penguin-png-5.png";
-const fishSrc: string = "https://www.freeiconspng.com/uploads/fish-png-16.png";
-const sharkSrc: string = "https://www.freeiconspng.com/uploads/animal-shark-png-6.png";
-
-const penguinImage = new Image();
-penguinImage.src = penguinSrc;
-const fishImage = new Image();
-fishImage.src = fishSrc;
-const sharkImage = new Image();
-sharkImage.src = sharkSrc;
 
 const pauseButton = document.getElementsByClassName("pausebutton").item(0);
 const pauseMenu = document.getElementsByClassName("pausemenu").item(0);
@@ -52,8 +28,6 @@ let collisionChecks: number = 0;
 
 let lastFrameTime = 0;
 let totalRuntime = 0;
-let fishSpawnTimer = 0; //time since last fish spawn
-let sharkSpawnTimer = 0; //time since last shark spawn
 
 let currentFrame = 0;  // last calculated frame, incremented by game logic
 let lastDrawnFrame = 0; // last drawn frame, incremented by draw loop
@@ -74,10 +48,6 @@ function start(): void {
     currentLevel=0;
     levels[0] = new PenguinLevel(context);
 
-    //draw empty frame behind menu
-    context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
     //unpause and start Game
     togglePause();
     pauseButton.textContent = "Start";
@@ -93,25 +63,18 @@ function logicLoop(): void {
     if (!isPaused) {
         currentFrameDuration = performance.now() - lastFrameTime;
         if (currentFrameDuration > simulationTPF - 10) {
-            // let animationStartTime = performance.now();
 
-           
             collisionChecks = 0;
 
             levels[currentLevel].update(currentFrameDuration);
 
-            //collision testing last
-            // handleCollisions();
-
             lastFrameTime = performance.now();
             currentFrame++;
-
 
             if (simulationFPSArray.length == 60) {
                 simulationFPSArray.shift();
             }
             simulationFPSArray.push(currentFrameDuration);
-            // console.log(simulationFPSArray);
             simulationFPSAverage = simulationFPSArray.reduce((a, b) => a + b) / 60;
 
         }
@@ -127,21 +90,10 @@ function drawLoop(): void {
     if (!isPaused && currentFrame > lastDrawnFrame) {
         lastDrawnFrame++;
 
-
         //reset frame
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        //depth-dependent color calculation
-        let color = [124, 233, 252];
-        let newcolor = color.map((color) => {
-            let depth = Math.max(0, camera.y);
-            let maxdepth = 2500;
-            let remainingdepth = maxdepth - depth;
-            color = color * remainingdepth / maxdepth;
-            return color;
-        });
-        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        
 
         levels[currentLevel].draw();
        
@@ -155,7 +107,7 @@ function drawLoop(): void {
         if (levels[currentLevel].objectsByFaction[1].size > 0) {
             document.getElementById("value8").textContent = Math.round(vectorLength(levels[currentLevel].player.velocity)).toString();
         }
-        document.getElementById("value9").textContent = fishcounter.toString();
+        document.getElementById("value9").textContent = levels[currentLevel].fishcounter.toString();
         // document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
         document.getElementById("value10").textContent = Math.round(simulationFPSAverage).toString();
         document.getElementById("fishcounter").textContent = levels[currentLevel].fishCounter.toString();
@@ -164,149 +116,6 @@ function drawLoop(): void {
 
 }
 
-/*collision functions */
-function handleCollisions(objectsByFaction: any, projectilesByFaction: any): void {
-    /*
-    TODO
-    first projectiles collide:
-        a, with non-faction projectiles
-        b, with non-faction actors
-        c, with terrain
-    second actors collide
-        a, with non-faction actors
-        b, with terrain
-    */
-
-
-    //Projectile collisions
-    for (let i = 0; i < projectilesByFaction.length; i++) { //faction 0 should not have projectiles?
-        //  projectile collides with other projectile
-        for (let j = 0; j < projectilesByFaction.length; j++) {
-            if (i != j) {
-                projectilesByFaction[i].forEach((projectile1: any) => {
-                    projectilesByFaction[j].forEach((projectile2: any) => {
-                        if (projectile1.hasCollision && projectile2.hasCollision && areObjectsColliding(projectile1, projectile2)) {
-                            console.log("proj proj coll")
-                            projectile1.startDestruction();
-                            projectile2.startDestruction();
-                        }
-                    })
-                })
-            }
-        }
-        //projectile collides with faction object other than faction 0 (terrain)
-        for (let j = 1; j < objectsByFaction.length; j++) {
-            if (i != j) {
-                projectilesByFaction[i].forEach((projectile: any) => {
-                    objectsByFaction[j].forEach((object: any) => {
-                        if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
-                            console.log("proj act coll")
-                            projectile.startDestruction();
-                            object.startDestruction();
-                        }
-                    })
-                })
-            }
-        }
-        //projectile collides with faction 0 object (terrain)
-        if (i != 0) {
-            //TODO let faction 0 projectiles collide with terrain?
-            projectilesByFaction[i].forEach((projectile: any) => {
-                objectsByFaction[0].forEach((object: any) => {
-                    if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
-                        projectile.startDestruction();
-                        console.log("proj terr coll");
-                    }
-                })
-            })
-        }
-    }
-
-    for (let i = 1; i < objectsByFaction.length; i++) {
-        for (let j = i + 1; j < objectsByFaction.length; j++) {
-            if (i != j) {
-                for (let object1 of objectsByFaction[i]) {
-                    for (let object2 of objectsByFaction[j]) {
-                        if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
-                            if (object1.constructor.name == "Player" && object2.constructor.name == "Fish") {
-                                object2.startDestruction();
-                                fishcounter++;
-                            }
-                            if (object1.constructor.name == "Fish" && object2.constructor.name == "Shark") {
-                                object1.startDestruction();
-                            }
-                            if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
-                                object1.startDestruction();
-                                document.getElementById("menuline2").innerHTML = "Game Over!";
-                                togglePause();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (let object1 of objectsByFaction[i]) {
-            for (let object2 of objectsByFaction[0]) {
-                if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
-                    object1.velocity = { x: 0, y: 0 };
-                    //object colliding with terrain stop completely
-                }
-            }
-        }
-
-
-    }
-
-
-}
-
-
-
-
-function areObjectsColliding(object1: any, object2: any): boolean {
-    collisionChecks++;
-    let type1 = object1.type;
-    let type2 = object2.type;
-    if (type1 = "rectangle") {
-        if (type2 = "rectangle") {
-            return collisionRectangleRectangle(object1, object2);
-        } else {
-            return collisionRectangleCircle(object1, object2);
-        }
-    } else {
-        if (type2 = "rectangle") {
-            return collisionRectangleCircle(object2, object1);
-        } else {
-            return collisionCircleCircle(object1, object2);
-        }
-    }
-}
-
-function collisionRectangleRectangle(rectangle1: any, rectangle2: any): boolean {
-    return (rectangle1.shape.x < rectangle2.shape.x + rectangle2.shape.width &&
-        rectangle1.shape.x + rectangle1.shape.width > rectangle2.shape.x &&
-        rectangle1.shape.y < rectangle2.shape.y + rectangle2.shape.height &&
-        rectangle1.shape.y + rectangle1.shape.height > rectangle2.shape.y)
-}
-function collisionRectangleCircle(rectangle: any, circle: any): boolean {
-    if(rectangle.type=="circle") {
-        let swap=rectangle;
-        rectangle=circle;
-        circle=swap;
-    }
-    let xborder = circle.x
-    let yborder = circle.y
-    if (circle.x < rectangle.x) xborder = rectangle.x
-    else if (circle.x > (rectangle.x + rectangle.width)) xborder = rectangle.x + rectangle.width
-    if (circle.y < rectangle.y) yborder = rectangle.y
-    else if (circle.y > (rectangle.y + rectangle.height)) yborder = rectangle.y + rectangle.height
-    let dist = Math.sqrt((circle.x - xborder) ** 2 + (circle.y - yborder) ** 2)
-    return (dist <= circle.radius)
-}
-function collisionCircleCircle(circle1: any, circle2: any): boolean {
-    return (vectorLength({ x: circle1.x - circle2.x, y: circle1.y - circle2.y }) <= (circle1.radius + circle2.radius))
-}
 function vectorLength(vector: vector): number {
     return Math.sqrt(vector.x * vector.x + vector.y * vector.y)
 }

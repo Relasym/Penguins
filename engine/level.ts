@@ -19,6 +19,8 @@ class Level {
     objectsByFaction: Set<BasicInterface>[] = [];
     projectilesByFaction: Set<object>[] = [];
 
+    gravity=300;
+
 
     constructor(context: CanvasRenderingContext2D) {
         this.context = context;
@@ -31,6 +33,19 @@ class Level {
     }
 
     draw() {
+
+        //depth-dependent color calculation
+        let color = [124, 233, 252];
+        let newcolor = color.map((color) => {
+            let depth = Math.max(0, camera.y);
+            let maxdepth = 2500;
+            let remainingdepth = maxdepth - depth;
+            color = color * remainingdepth / maxdepth;
+            return color;
+        });
+        
+        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
         this.drawableObjects.forEach((object: DrawableObject) => {
             object.draw();
         });

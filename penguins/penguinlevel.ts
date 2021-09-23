@@ -1,5 +1,5 @@
 
-class PenguinLevel extends Level{
+class PenguinLevel extends Level {
     fishSpawnTimer: number; //time since last fish spawn
     sharkSpawnTimer: number; //time since last shark spawn
     fishSpawnDelay: number = 1000; //ms
@@ -11,7 +11,7 @@ class PenguinLevel extends Level{
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
         this.start();
-        this.fishCounter=0;
+        this.fishCounter = 0;
     }
 
     draw() {
@@ -60,6 +60,10 @@ class PenguinLevel extends Level{
         totalRuntime = 0;
         fishSpawnTimer = 0;
         sharkSpawnTimer = 0;
+
+        //draw empty frame behind menu
+        context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
 
         //create Sky
         //todo: this should be an object without collision

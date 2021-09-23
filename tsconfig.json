@@ -7,7 +7,9 @@
         "engine/main.ts",
         "engine/gameObjects.ts",
         "engine/level.ts",
+        "engine/collisions.ts",
         "penguins/penguinlevel.ts",
         "penguins/penguinobjects.ts",
+        "penguins/main.ts"
     ]
 }
