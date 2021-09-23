@@ -3,26 +3,7 @@ class Fish extends Actor {
     constructor(owner, shape, type, color) {
         super(owner, shape, type, color);
         this.image = fishImage;
-    }
-    draw() {
-        if (this.isDestroying) {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
-        }
-        else {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
-        }
-        this.owner.context.save();
-        this.owner.context.globalAlpha = this.destructionProgress;
-        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        // context.rotate(this.rotation);
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
-        // if (this.velocity.x < 0) {
-        //     context.scale(-1, 1);
-        // }
-        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
-        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
-        this.owner.context.restore();
+        this.imageDirection = "right";
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
@@ -54,26 +35,7 @@ class Shark extends Actor {
         this.frictionPerSecond = 0.005;
         this.sharkAccelerationFactor = 3; // acceleration per distance from player per second
         this.image = sharkImage;
-    }
-    draw() {
-        if (this.isDestroying) {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
-        }
-        else {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
-        }
-        this.owner.context.save();
-        this.owner.context.globalAlpha = this.destructionProgress;
-        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        // context.rotate(this.rotation);
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
-        // if (this.velocity.x > 0) {
-        //     context.scale(-1, 1);
-        // }
-        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
-        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
-        this.owner.context.restore();
+        this.imageDirection = "left";
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
@@ -128,7 +90,7 @@ class Shark extends Actor {
     }
 }
 //a very hungry penguin
-class Player extends Actor {
+class Penguin extends Actor {
     constructor(owner, shape, type, color, speed) {
         super(owner, shape, type, color);
         this.rotationSpeed = Math.PI * 2.0; //radians per second

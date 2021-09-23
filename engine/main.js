@@ -75,7 +75,7 @@ function drawLoop() {
         if (levels[currentLevel].objectsByFaction[1].size > 0) {
             document.getElementById("value8").textContent = Math.round(vectorLength(levels[currentLevel].player.velocity)).toString();
         }
-        document.getElementById("value9").textContent = levels[currentLevel].fishcounter.toString();
+        document.getElementById("value9").textContent = levels[currentLevel].fishCounter.toString();
         // document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
         document.getElementById("value10").textContent = Math.round(simulationFPSAverage).toString();
         document.getElementById("fishcounter").textContent = levels[currentLevel].fishCounter.toString();
@@ -106,14 +106,12 @@ document.addEventListener('keydown', (keypress) => {
     if (keypress.key == "r") {
         levels[currentLevel] = new PenguinLevel(context);
     }
-    // console.log(currentInputs);
 });
 document.addEventListener('keyup', (keypress) => {
     currentInputs.delete(keypress.key);
 });
 document.addEventListener('mousedown', (btn) => {
     currentInputs.add("MB" + btn.button);
-    // console.log(currentInputs)
     // let mouseX = btn.clientX - canvas.offsetLeft;
     // let mouseY = btn.clientY - canvas.offsetTop;
     // console.log(mouseX + " " + mouseY)

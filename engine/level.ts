@@ -5,7 +5,7 @@ type camera = {
 
 class Level {
     context: CanvasRenderingContext2D;
-    player?: Player;
+    player?: Penguin;
     camera?: camera;
 
     allObjects: Set<object> = new Set();
@@ -19,7 +19,7 @@ class Level {
     objectsByFaction: Set<BasicInterface>[] = [];
     projectilesByFaction: Set<object>[] = [];
 
-    gravity=300;
+    gravity = 300;
 
 
     constructor(context: CanvasRenderingContext2D) {
@@ -33,19 +33,6 @@ class Level {
     }
 
     draw() {
-
-        //depth-dependent color calculation
-        let color = [124, 233, 252];
-        let newcolor = color.map((color) => {
-            let depth = Math.max(0, camera.y);
-            let maxdepth = 2500;
-            let remainingdepth = maxdepth - depth;
-            color = color * remainingdepth / maxdepth;
-            return color;
-        });
-        
-        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
-        context.fillRect(0, 0, canvas.width, canvas.height);
         this.drawableObjects.forEach((object: DrawableObject) => {
             object.draw();
         });
@@ -65,7 +52,7 @@ class Level {
         }
 
         //collision testing last
-        handleCollisions(this.objectsByFaction, this.projectilesByFaction);
+        this.handleCollisions(this.objectsByFaction, this.projectilesByFaction);
 
     }
 
@@ -74,7 +61,7 @@ class Level {
 
         //create player last so its drawn last, great solution right here
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Player(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
@@ -85,9 +72,8 @@ class Level {
 
     }
 
-    end() {
-
-    }
+    end() { }
+    handleCollisions(objectsByFaction: any, projectilesByFaction: any): void {/*collision checks and results go here*/ }
 }
 
 class GameObjectController<T extends BasicObject> {
@@ -97,9 +83,9 @@ class GameObjectController<T extends BasicObject> {
     currentItems: number;
     currentSize: number;
     objects: T[];
-    objectType: { new(): T ;}
+    objectType: { new(): T; }
 
-    constructor(size?:number){
+    constructor(size?: number) {
         let startingSize = size || this.defaultSize;
         this.objects = new Array(startingSize);
         this.currentItems = 0;
@@ -119,5 +105,5 @@ class GameObjectController<T extends BasicObject> {
             this.objects = newObjects;
         }
     }
-    
+
 }

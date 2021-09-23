@@ -2,30 +2,9 @@
 //moves and scares other fish when it gets eaten
 class Fish extends Actor {
     constructor(owner: Level, shape: shape, type: String, color: color) {
-        super(owner, shape, type, color)
+        super(owner, shape, type, color);
         this.image = fishImage;
-    }
-
-    draw(): void {
-        if (this.isDestroying) {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
-        } else {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
-        }
-
-        this.owner.context.save();
-        this.owner.context.globalAlpha = this.destructionProgress;
-        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        // context.rotate(this.rotation);
-
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
-        // if (this.velocity.x < 0) {
-        //     context.scale(-1, 1);
-        // }
-        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
-        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
-        this.owner.context.restore();
+        this.imageDirection = "right";
     }
 
     update(currentFrameDuration: number): void {
@@ -63,30 +42,8 @@ class Shark extends Actor {
     constructor(owner: Level, shape: shape, type: String, color: color) {
         super(owner, shape, type, color);
         this.image = sharkImage;
+        this.imageDirection = "left";
     }
-
-    draw(): void {
-        if (this.isDestroying) {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
-        } else {
-            this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a})`;
-        }
-
-        this.owner.context.save();
-        this.owner.context.globalAlpha = this.destructionProgress;
-        // context.translate(this.x + this.width / 2, this.y + this.height / 2);
-        // context.rotate(this.rotation);
-
-        // context.translate(-1 * (this.x + this.width / 2), -1 * (this.y + this.height / 2));
-        // context.fillRect(this.x, this.y, this.width, this.height);
-        // if (this.velocity.x > 0) {
-        //     context.scale(-1, 1);
-        // }
-        this.owner.context.drawImage(this.image, this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.width, this.shape.height);
-        this.owner.context.setTransform(1, 0, 0, 1, 0, 0);
-        this.owner.context.restore();
-    }
-
     update(currentFrameDuration: number): void {
         super.update(currentFrameDuration);
         this.targetAge += currentFrameDuration;
@@ -96,7 +53,7 @@ class Shark extends Actor {
         } else {
             this.affectedByGravity = false;
             if (this.targetAge > this.maxTrackingTime || this.currentTarget == null || this.currentTarget.isDestroying) {
-                this.currentTarget=null;
+                this.currentTarget = null;
                 this.findNewTarget();
             }
             if (this.targetAge > this.retargetingDelay) {
@@ -145,7 +102,7 @@ class Shark extends Actor {
 }
 
 //a very hungry penguin
-class Player extends Actor {
+class Penguin extends Actor {
     rotationSpeed = Math.PI * 2.0; //radians per second
     maxspeed = 5000; //units (currently ==pixels) per second
     refireDelay = 50; //ms

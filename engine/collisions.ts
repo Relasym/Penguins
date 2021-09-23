@@ -1,104 +1,7 @@
 
 /*collision functions */
-function handleCollisions(objectsByFaction: any, projectilesByFaction: any): void {
-    /*
-    TODO
-    first projectiles collide:
-        a, with non-faction projectiles
-        b, with non-faction actors
-        c, with terrain
-    second actors collide
-        a, with non-faction actors
-        b, with terrain
-    */
 
-
-    //Projectile collisions
-    for (let i = 0; i < projectilesByFaction.length; i++) { //faction 0 should not have projectiles?
-        //  projectile collides with other projectile
-        for (let j = 0; j < projectilesByFaction.length; j++) {
-            if (i != j) {
-                projectilesByFaction[i].forEach((projectile1: any) => {
-                    projectilesByFaction[j].forEach((projectile2: any) => {
-                        if (projectile1.hasCollision && projectile2.hasCollision && areObjectsColliding(projectile1, projectile2)) {
-                            console.log("proj proj coll")
-                            projectile1.startDestruction();
-                            projectile2.startDestruction();
-                        }
-                    })
-                })
-            }
-        }
-        //projectile collides with faction object other than faction 0 (terrain)
-        for (let j = 1; j < objectsByFaction.length; j++) {
-            if (i != j) {
-                projectilesByFaction[i].forEach((projectile: any) => {
-                    objectsByFaction[j].forEach((object: any) => {
-                        if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
-                            console.log("proj act coll")
-                            projectile.startDestruction();
-                            object.startDestruction();
-                        }
-                    })
-                })
-            }
-        }
-        //projectile collides with faction 0 object (terrain)
-        if (i != 0) {
-            //TODO let faction 0 projectiles collide with terrain?
-            projectilesByFaction[i].forEach((projectile: any) => {
-                objectsByFaction[0].forEach((object: any) => {
-                    if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
-                        projectile.startDestruction();
-                        console.log("proj terr coll");
-                    }
-                })
-            })
-        }
-    }
-
-    for (let i = 1; i < objectsByFaction.length; i++) {
-        for (let j = i + 1; j < objectsByFaction.length; j++) {
-            if (i != j) {
-                for (let object1 of objectsByFaction[i]) {
-                    for (let object2 of objectsByFaction[j]) {
-                        if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
-                            if (object1.constructor.name == "Player" && object2.constructor.name == "Fish") {
-                                object2.startDestruction();
-                                levels[currentLevel].fishCounter++;
-                            }
-                            if (object1.constructor.name == "Fish" && object2.constructor.name == "Shark") {
-                                object1.startDestruction();
-                            }
-                            if (object1.constructor.name == "Player" && object2.constructor.name == "Shark") {
-                                object1.startDestruction();
-                                document.getElementById("menuline2").innerHTML = "Game Over!";
-                                togglePause();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        for (let object1 of objectsByFaction[i]) {
-            for (let object2 of objectsByFaction[0]) {
-                if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
-                    object1.velocity = { x: 0, y: 0 };
-                    //object colliding with terrain stop completely
-                }
-            }
-        }
-
-
-    }
-
-
-}
-
-
-
-
+//checks for object types, then calls appropriate collision detection function
 function areObjectsColliding(object1: any, object2: any): boolean {
     collisionChecks++;
     let type1 = object1.type;
@@ -125,10 +28,10 @@ function collisionRectangleRectangle(rectangle1: any, rectangle2: any): boolean 
         rectangle1.shape.y + rectangle1.shape.height > rectangle2.shape.y)
 }
 function collisionRectangleCircle(rectangle: any, circle: any): boolean {
-    if(rectangle.type=="circle") {
-        let swap=rectangle;
-        rectangle=circle;
-        circle=swap;
+    if (rectangle.type == "circle") {
+        let swap = rectangle;
+        rectangle = circle;
+        circle = swap;
     }
     let xborder = circle.x
     let yborder = circle.y

@@ -2,8 +2,8 @@ const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const startTime = performance.now();
 const currentInputs = new Set();
-const levelAmount= 4;
-const levels= new Array(levelAmount);
+const levelAmount = 4;
+const levels = new Array(levelAmount);
 var currentLevel: number;
 
 type vector = {
@@ -45,7 +45,7 @@ function start(): void {
     document.getElementById("type9").textContent = "Fish eaten: ";
     document.getElementById("type10").textContent = "Frametime: ";
 
-    currentLevel=0;
+    currentLevel = 0;
     levels[0] = new PenguinLevel(context);
 
     //unpause and start Game
@@ -93,21 +93,19 @@ function drawLoop(): void {
         //reset frame
         context.clearRect(0, 0, canvas.width, canvas.height);
 
-        
-
         levels[currentLevel].draw();
-       
+
         //update stats
         // document.getElementById("value1").textContent = allObjects.length.toString();
         document.getElementById("value2").textContent = levels[currentLevel].drawableObjects.size.toString();
         document.getElementById("value3").textContent = levels[currentLevel].updateableObjects.size.toString();
         document.getElementById("value4").textContent = levels[currentLevel].objectsByFaction[2].size.toString();
-        document.getElementById("value5").textContent =levels[currentLevel].objectsByFaction[3].size.toString();
+        document.getElementById("value5").textContent = levels[currentLevel].objectsByFaction[3].size.toString();
         document.getElementById("value7").textContent = collisionChecks.toString();
         if (levels[currentLevel].objectsByFaction[1].size > 0) {
             document.getElementById("value8").textContent = Math.round(vectorLength(levels[currentLevel].player.velocity)).toString();
         }
-        document.getElementById("value9").textContent = levels[currentLevel].fishcounter.toString();
+        document.getElementById("value9").textContent = levels[currentLevel].fishCounter.toString();
         // document.getElementById("value10").textContent = performance.now() - lastFrameTime + "ms";
         document.getElementById("value10").textContent = Math.round(simulationFPSAverage).toString();
         document.getElementById("fishcounter").textContent = levels[currentLevel].fishCounter.toString();
@@ -141,9 +139,8 @@ document.addEventListener('keydown', (keypress) => {
         activateOrCreateLevel(3);
     }
     if (keypress.key == "r") {
-        levels[currentLevel]=new PenguinLevel(context);
+        levels[currentLevel] = new PenguinLevel(context);
     }
-    // console.log(currentInputs);
 
 });
 document.addEventListener('keyup', (keypress) => {
@@ -152,7 +149,6 @@ document.addEventListener('keyup', (keypress) => {
 
 document.addEventListener('mousedown', (btn) => {
     currentInputs.add("MB" + btn.button);
-    // console.log(currentInputs)
     // let mouseX = btn.clientX - canvas.offsetLeft;
     // let mouseY = btn.clientY - canvas.offsetTop;
     // console.log(mouseX + " " + mouseY)
@@ -166,11 +162,11 @@ pauseButton.addEventListener("click", function () {
     this.blur(); //unfocus so spacebar can't trigger pause
 })
 
-function activateOrCreateLevel(number : number): void{
-    if(levels[number]==null) {
-        levels[number]=new PenguinLevel(context);
+function activateOrCreateLevel(number: number): void {
+    if (levels[number] == null) {
+        levels[number] = new PenguinLevel(context);
     }
-    currentLevel=number;
+    currentLevel = number;
 }
 
 function togglePause(): void {
@@ -184,7 +180,7 @@ function togglePause(): void {
     if (levels[currentLevel].objectsByFaction[1].size == 0) {
         console.info("Restarting");
         levels[currentLevel] = new PenguinLevel(context);
-        
+
         start();
         togglePause();
         pauseButton.textContent = "Restart";

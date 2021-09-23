@@ -17,17 +17,6 @@ class Level {
         this.camera = { x: 0, y: 0 };
     }
     draw() {
-        //depth-dependent color calculation
-        let color = [124, 233, 252];
-        let newcolor = color.map((color) => {
-            let depth = Math.max(0, camera.y);
-            let maxdepth = 2500;
-            let remainingdepth = maxdepth - depth;
-            color = color * remainingdepth / maxdepth;
-            return color;
-        });
-        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
-        context.fillRect(0, 0, canvas.width, canvas.height);
         this.drawableObjects.forEach((object) => {
             object.draw();
         });
@@ -43,13 +32,13 @@ class Level {
             this.camera.y = this.player.shape.y - 300 + this.player.shape.height / 2;
         }
         //collision testing last
-        handleCollisions(this.objectsByFaction, this.projectilesByFaction);
+        this.handleCollisions(this.objectsByFaction, this.projectilesByFaction);
     }
     start() {
         totalRuntime = 0;
         //create player last so its drawn last, great solution right here
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Player(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
@@ -58,8 +47,8 @@ class Level {
         player.register();
         this.player = player;
     }
-    end() {
-    }
+    end() { }
+    handleCollisions(objectsByFaction, projectilesByFaction) { }
 }
 class GameObjectController {
     constructor(size) {

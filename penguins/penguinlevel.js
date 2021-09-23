@@ -9,8 +9,18 @@ class PenguinLevel extends Level {
         this.fishCounter = 0;
     }
     draw() {
+        //depth-dependent color calculation
+        let color = [124, 233, 252]; //should be oceancolor
+        let newcolor = color.map((color) => {
+            let depth = Math.max(0, this.camera.y);
+            let maxdepth = 2500;
+            let remainingdepth = maxdepth - depth;
+            color = color * remainingdepth / maxdepth;
+            return color;
+        });
+        context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
+        context.fillRect(0, 0, canvas.width, canvas.height);
         this.drawableObjects.forEach((object) => {
-            // console.log(object);
             object.draw();
         });
     }
@@ -40,7 +50,7 @@ class PenguinLevel extends Level {
             }
         }
         //collision testing last
-        handleCollisions(this.objectsByFaction, this.projectilesByFaction);
+        this.handleCollisions(this.objectsByFaction, this.projectilesByFaction);
     }
     start() {
         totalRuntime = 0;
@@ -49,14 +59,15 @@ class PenguinLevel extends Level {
         //draw empty frame behind menu
         context.fillStyle = `rgba(${skyColour.r},${skyColour.g},${skyColour.b},${skyColour.a})`;
         context.fillRect(0, 0, canvas.width, canvas.height);
+        // let test = new DrawableObject(this,{x:100,y:100,width:400,height:400},"rectangle", {r:100,g:100,b:100,a:1});
+        // test.faction=0;
+        // test.register();
         //create Sky
-        //todo: this should be an object without collision
         for (let i = 0; i < 1; i++) {
             let x = -1000000;
             let y = -10000;
             let width = 2000000;
             let height = 10000;
-            let speed = 100;
             let color = skyColour;
             let sky = new DrawableObject(this, { x: x, y: y, width: width, height: height }, "rectangle", color);
             sky.hasCollision = false;
@@ -67,9 +78,9 @@ class PenguinLevel extends Level {
         for (let i = 0; i < 10; i++) {
             this.newFish();
         }
-        //create player last so its drawn last, great solution right here
+        //create player
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Player(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
@@ -89,7 +100,7 @@ class PenguinLevel extends Level {
         let speed = 100;
         let xvel = speed * (Math.random() - 0.5);
         let yvel = speed * (Math.random() - 0.5);
-        let color = { r: 0, g: 0, b: 0, a: 1 };
+        let color = { r: 255, g: 255, b: 255, a: 1 };
         let fish = new Fish(this, { x, y, width, height }, "rectangle", color);
         fish.velocity.x = xvel;
         fish.velocity.y = yvel;
@@ -112,5 +123,92 @@ class PenguinLevel extends Level {
         shark.velocity.y = yvel;
         shark.faction = 3;
         shark.register();
+    }
+    handleCollisions(objectsByFaction, projectilesByFaction) {
+        /*
+        TODO
+        first projectiles collide:
+            a, with non-faction projectiles
+            b, with non-faction actors
+            c, with terrain
+        second actors collide
+            a, with non-faction actors
+            b, with terrain
+        */
+        //Projectile collisions
+        for (let i = 0; i < projectilesByFaction.length; i++) { //faction 0 should not have projectiles?
+            //  projectile collides with other projectile
+            for (let j = 0; j < projectilesByFaction.length; j++) {
+                if (i != j) {
+                    projectilesByFaction[i].forEach((projectile1) => {
+                        projectilesByFaction[j].forEach((projectile2) => {
+                            if (projectile1.hasCollision && projectile2.hasCollision && areObjectsColliding(projectile1, projectile2)) {
+                                console.log("proj proj coll");
+                                projectile1.startDestruction();
+                                projectile2.startDestruction();
+                            }
+                        });
+                    });
+                }
+            }
+            //projectile collides with faction object other than faction 0 (terrain)
+            for (let j = 1; j < objectsByFaction.length; j++) {
+                if (i != j) {
+                    projectilesByFaction[i].forEach((projectile) => {
+                        objectsByFaction[j].forEach((object) => {
+                            if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
+                                console.log("proj act coll");
+                                projectile.startDestruction();
+                                object.startDestruction();
+                            }
+                        });
+                    });
+                }
+            }
+            //projectile collides with faction 0 object (terrain)
+            if (i != 0) {
+                //TODO let faction 0 projectiles collide with terrain?
+                projectilesByFaction[i].forEach((projectile) => {
+                    objectsByFaction[0].forEach((object) => {
+                        if (projectile.hasCollision && object.hasCollision && areObjectsColliding(projectile, object)) {
+                            projectile.startDestruction();
+                            console.log("proj terr coll");
+                        }
+                    });
+                });
+            }
+        }
+        for (let i = 1; i < objectsByFaction.length; i++) {
+            for (let j = i + 1; j < objectsByFaction.length; j++) {
+                if (i != j) {
+                    for (let object1 of objectsByFaction[i]) {
+                        for (let object2 of objectsByFaction[j]) {
+                            if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
+                                if (object1.constructor.name == "Penguin" && object2.constructor.name == "Fish") {
+                                    object2.startDestruction();
+                                    levels[currentLevel].fishCounter++;
+                                }
+                                if (object1.constructor.name == "Fish" && object2.constructor.name == "Shark") {
+                                    object1.startDestruction();
+                                }
+                                if (object1.constructor.name == "Penguin" && object2.constructor.name == "Shark") {
+                                    object1.startDestruction();
+                                    document.getElementById("menuline2").innerHTML = "Game Over!";
+                                    togglePause();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (let object1 of objectsByFaction[i]) {
+                for (let object2 of objectsByFaction[0]) {
+                    if (object1.hasCollision && object2.hasCollision && areObjectsColliding(object1, object2)) {
+                        object1.velocity = { x: 0, y: 0 };
+                        //object colliding with terrain stop completely
+                    }
+                }
+            }
+        }
     }
 }
