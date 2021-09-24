@@ -1,23 +1,26 @@
-
 /*collision functions */
 
-//checks for object types, then calls appropriate collision detection function
+//calls appropriate collision function for given object types/shapes
 function areObjectsColliding(object1: any, object2: any): boolean {
     collisionChecks++;
+
+    //no collision if objects are too far apart
+    if(!collisionCircleCircle(object1,object2)) {
+        return false;
+    }
+
     let type1 = object1.type;
     let type2 = object2.type;
-    if (type1 = "rectangle") {
-        if (type2 = "rectangle") {
-            return collisionRectangleRectangle(object1, object2);
-        } else {
-            return collisionRectangleCircle(object1, object2);
-        }
+    //if both objects are circles we don't need any other checks
+    if(type1=="circle" && type2=="circle") {
+        return true;
+    }
+
+    //possible collision, check according to object type
+    if(type1=="circle" || type2=="circle") {
+        return collisionRectangleCircle(object1,object2)
     } else {
-        if (type2 = "rectangle") {
-            return collisionRectangleCircle(object2, object1);
-        } else {
-            return collisionCircleCircle(object1, object2);
-        }
+        return collisionRectangleRectangle(object1,object2)
     }
 }
 
@@ -33,15 +36,15 @@ function collisionRectangleCircle(rectangle: any, circle: any): boolean {
         rectangle = circle;
         circle = swap;
     }
-    let xborder = circle.x
-    let yborder = circle.y
-    if (circle.x < rectangle.x) xborder = rectangle.x
-    else if (circle.x > (rectangle.x + rectangle.width)) xborder = rectangle.x + rectangle.width
-    if (circle.y < rectangle.y) yborder = rectangle.y
-    else if (circle.y > (rectangle.y + rectangle.height)) yborder = rectangle.y + rectangle.height
-    let dist = Math.sqrt((circle.x - xborder) ** 2 + (circle.y - yborder) ** 2)
+    let xborder = circle.shape.x
+    let yborder = circle.shape.y
+    if (circle.shape.x < rectangle.shape.x) xborder = rectangle.shape.x
+    else if (circle.shape.x > (rectangle.shape.x + rectangle.shape.width)) xborder = rectangle.shape.x + rectangle.shape.width
+    if (circle.shape.y < rectangle.shape.y) yborder = rectangle.shape.y
+    else if (circle.shape.y > (rectangle.shape.y + rectangle.shape.height)) yborder = rectangle.shape.y + rectangle.shape.height
+    let dist = Math.sqrt((circle.shape.x - xborder) ** 2 + (circle.shape.y - yborder) ** 2)
     return (dist <= circle.radius)
 }
 function collisionCircleCircle(circle1: any, circle2: any): boolean {
-    return (vectorLength({ x: circle1.x - circle2.x, y: circle1.y - circle2.y }) <= (circle1.radius + circle2.radius))
+    return (vectorLength({ x: circle1.shape.x - circle2.shape.x, y: circle1.shape.y - circle2.shape.y }) <= (circle1.shape.radius + circle2.shape.radius))
 }
