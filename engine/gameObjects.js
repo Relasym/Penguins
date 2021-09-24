@@ -86,6 +86,9 @@ class DrawableObject extends BasicObject {
             if (this.canRotate) {
                 context.rotate(this.rotation);
             }
+            if (this.image.src != undefined && this.imageDirection == undefined && this.canRotate == false) {
+                console.warn("Image Direction undefined");
+            }
             if (this.velocity != undefined && this.imageDirection != undefined) {
                 if (this.imageDirection == "right" && this.velocity.x < 0 || this.imageDirection == "left" && this.velocity.x > 0) {
                     context.scale(-1, 1);
