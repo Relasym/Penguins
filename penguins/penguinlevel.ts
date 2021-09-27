@@ -4,6 +4,10 @@ class PenguinLevel extends Level {
     sharkSpawnTimer: number; //time since last shark spawn
     fishSpawnDelay: number = 1000; //ms
     sharkSpawnDelay: number = 5000; //ms
+    fishPerSpawn: number = 10;
+    sharksPerSpawn: number = 1;
+    maximumFish: number = 100;
+    maximumSharks: number = 5;
     fishCounter: number;
 
     constructor(context: CanvasRenderingContext2D) {
@@ -26,7 +30,7 @@ class PenguinLevel extends Level {
         });
         context.fillStyle = `rgba(${newcolor[0]},${newcolor[1]},${newcolor[2]},1)`;
         context.fillRect(0, 0, canvas.width, canvas.height);
-        this.drawableObjects.forEach((object: DrawableObject) => {
+        this.drawableObjects.forEach((object: GameObject) => {
             object.draw();
         });
     }
@@ -36,7 +40,7 @@ class PenguinLevel extends Level {
         this.fishSpawnTimer += currentFrameDuration;
         this.sharkSpawnTimer += currentFrameDuration;
 
-        this.updateableObjects.forEach((object: BasicObject) => {
+        this.updateableObjects.forEach((object: GameObject) => {
             object.update(currentFrameDuration);
         });
 
@@ -45,18 +49,18 @@ class PenguinLevel extends Level {
             this.camera.y = this.player.shape.y - 300 + this.player.shape.height / 2;
         }
 
-        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < 100) {
+        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < this.maximumFish) {
             this.fishSpawnTimer -= this.fishSpawnDelay;
             //add new Fish
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < this.fishPerSpawn; i++) {
                 this.newFish();
             }
         }
 
-        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].size < 5) {
+        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].size < this.maximumSharks) {
             this.sharkSpawnTimer -= this.sharkSpawnDelay;
             //add new Shark(s)
-            for (let i = 0; i < 1; i++) {
+            for (let i = 0; i < this.sharksPerSpawn; i++) {
                 this.newShark();
             }
         }
@@ -86,8 +90,9 @@ class PenguinLevel extends Level {
             let width = 2000000;
             let height = 10000;
             let color = skyColour;
-            let sky = new DrawableObject(this, { x: x, y: y, width: width, height: height }, "rectangle", color);
+            let sky = new GameObject(this, { x: x, y: y, width: width, height: height }, collisionType.Rectangle, color);
             sky.hasCollision = false;
+            sky.isUpdateable=false;
             sky.faction = 0;
             sky.register();
         }
@@ -99,12 +104,10 @@ class PenguinLevel extends Level {
 
         //create player
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, collisionType.Rectangle, color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
-        player.velocity.x = 0;
-        player.velocity.y = 0;
         player.register();
         this.player = player;
 
@@ -124,7 +127,7 @@ class PenguinLevel extends Level {
         let xvel = speed * (Math.random() - 0.5);
         let yvel = speed * (Math.random() - 0.5);
         let color = { r: 255, g: 255, b: 255, a: 1 };
-        let fish = new Fish(this, { x, y, width, height }, "rectangle", color);
+        let fish = new Fish(this, { x, y, width, height }, collisionType.Rectangle, color);
         fish.velocity.x = xvel;
         fish.velocity.y = yvel;
         fish.faction = 2;
@@ -140,7 +143,7 @@ class PenguinLevel extends Level {
         let xvel = speed * (Math.random() - 0.5);
         let yvel = speed * (Math.random() - 0.5);
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let shark = new Shark(this, { x, y, width, height }, "rectangle", color);
+        let shark = new Shark(this, { x, y, width, height }, collisionType.Rectangle, color);
         shark.sharkAccelerationFactor = 3 - 2 * scale;
         shark.velocity.x = xvel;
         shark.velocity.y = yvel;

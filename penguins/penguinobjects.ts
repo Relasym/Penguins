@@ -1,10 +1,10 @@
 
 //moves and scares other fish when it gets eaten
 class Fish extends Actor {
-    constructor(owner: Level, shape: shape, type: String, color: color) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color) {
         super(owner, shape, type, color);
         this.image = fishImage;
-        this.imageDirection = "right";
+        this.imageDirection = imageDirection.Right;
     }
 
     update(currentFrameDuration: number): void {
@@ -39,10 +39,10 @@ class Shark extends Actor {
     retargetingDelay = 500; //time in ms until shark actually tracks
     frictionPerSecond = 0.005;
     sharkAccelerationFactor = 3; // acceleration per distance from player per second
-    constructor(owner: Level, shape: shape, type: String, color: color) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color) {
         super(owner, shape, type, color);
         this.image = sharkImage;
-        this.imageDirection = "left";
+        this.imageDirection = imageDirection.Left;
     }
     update(currentFrameDuration: number): void {
         super.update(currentFrameDuration);
@@ -111,7 +111,7 @@ class Penguin extends Actor {
     speed: number;
     allBubbleSpeed = 300; //player speed at which a bubble is spawned every frame 
     frictionPerSecond = 0.003;
-    constructor(owner: Level, shape: shape, type: String, color: color, speed: number) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color, speed: number) {
         super(owner, shape, type, color);
         this.speed = speed;
         this.lastFire = performance.now();
@@ -161,7 +161,7 @@ class Penguin extends Actor {
             let x = this.shape.x + this.shape.width / 2 - this.shape.height * 0.8 / 2 * Math.sin(this.rotation);
             let y = this.shape.y + this.shape.height / 2 + this.shape.height * 0.9 / 2 * Math.cos(this.rotation);
             let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
-            let bubble = new MovingObject(this.owner, { x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
+            let bubble = new GameObject(this.owner, { x: x, y: y, radius: radius }, collisionType.Circle, { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);

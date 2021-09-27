@@ -38,7 +38,7 @@ class Level {
         totalRuntime = 0;
         //create player last so its drawn last, great solution right here
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, collisionType.Rectangle, color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;

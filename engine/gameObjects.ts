@@ -14,6 +14,16 @@ type color = {
     a?: number;
 }
 
+enum collisionType {
+    Circle,
+    Rectangle
+}
+
+enum imageDirection {
+    Left,
+    Right
+}
+
 interface BasicInterface {
     shape: shape;
     velocity: { x: any, y: any };
@@ -21,20 +31,38 @@ interface BasicInterface {
 }
 
 //basic object, includes register/deregister and destruction
-class BasicObject implements BasicInterface {
+class GameObject implements BasicInterface {
     shape: shape;
-    velocity: { x: number, y: number };
+    velocity = { x: 0, y: 0 };
     faction: number;
-    hasCollision = false;
-    isDrawable = false;
-    isUpdateable = false;
+    hasCollision = true;
+    isDrawable = true;
+    isUpdateable = true;
     isDestroying = false;
     destructionTime = 300; //ms
     destructionProgress = 1.0; //destroys object if it reaches 0, used as a multiplier for color alpha
     owner: Level;
+    type: collisionType;
+    image: HTMLImageElement;
+    imageDirection: imageDirection;
+    rotation = 0;
+    canRotate = false;
+    color: color;
+    affectedByGravity = false;
+    movesWhileDestroying = false;
 
-    constructor(owner: Level) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color) {
         this.owner = owner;
+        this.shape = shape;
+        this.type = type;
+        this.color = color;
+        this.image = new Image();
+        //maximum radius for simple collision checking
+        if(this.shape.radius==undefined) {
+            if(this.type==collisionType.Rectangle) {
+                this.shape.radius=vectorLength({x:this.shape.width, y:this.shape.height});
+            }
+        }
     }
 
     register(): void {
@@ -63,39 +91,21 @@ class BasicObject implements BasicInterface {
         if (this.destructionProgress <= 0) {
             this.deregister();
         }
+        if (this.affectedByGravity) {
+            this.velocity.y += this.owner.gravity * currentFrameDuration / 1000;
+        }
+        if (!this.isDestroying || this.movesWhileDestroying) {
+            this.shape.x += this.velocity.x * currentFrameDuration / 1000;
+            this.shape.y += this.velocity.y * currentFrameDuration / 1000;
+        }
     }
+
     distanceTo(object: BasicInterface): number {
         return vectorLength({ x: this.shape.x - object.shape.x, y: this.shape.y - object.shape.y })
     }
-}
 
-
-//basic object with drawing and optional image
-class DrawableObject extends BasicObject {
-    type: String;
-    image: HTMLImageElement;
-    imageDirection: String;
-    isDrawable = true;
-    hasCollision = true;
-    rotation = 0;
-    canRotate = false;
-    shape: shape;
-    color: color;
-    constructor(owner: Level, shape: shape, type: String, color: color) {
-        super(owner)
-        this.shape = shape;
-        this.type = type;
-        this.color = color;
-        this.image = new Image();
-        //maximum radius for simple collision checking
-        if(this.shape.radius==undefined) {
-            if(this.type=="rectangle") {
-                this.shape.radius=vectorLength({x:this.shape.width, y:this.shape.height});
-            }
-        }
-    }
     draw(): void {
-        if (this.type == "circle") {
+        if (this.type == collisionType.Circle) {
             //todo add images for circle types
             this.owner.context.beginPath();
             this.owner.context.arc(this.shape.x - this.owner.camera.x, this.shape.y - this.owner.camera.y, this.shape.radius, 0, Math.PI * 2, false);
@@ -107,7 +117,7 @@ class DrawableObject extends BasicObject {
             this.owner.context.fill();
         }
 
-        if (this.type == "rectangle") {
+        if (this.type == collisionType.Rectangle) {
             if (this.isDestroying) {
                 this.owner.context.fillStyle = `rgba(${this.color.r},${this.color.g},${this.color.b},${this.color.a * this.destructionProgress})`;
             } else {
@@ -126,7 +136,7 @@ class DrawableObject extends BasicObject {
                 console.warn(this);
             }
             if (this.velocity != undefined && this.imageDirection != undefined) {
-                if (this.imageDirection == "right" && this.velocity.x < 0 || this.imageDirection == "left" && this.velocity.x > 0) {
+                if (this.imageDirection == imageDirection.Right && this.velocity.x < 0 || this.imageDirection == imageDirection.Left && this.velocity.x > 0) {
                     context.scale(-1, 1);
                 }
             }
@@ -142,36 +152,12 @@ class DrawableObject extends BasicObject {
     }
 }
 
-//moving object, gravity can be turned on and off
-class MovingObject extends DrawableObject {
-    affectedByGravity = false;
-    isUpdateable = true;
-    movesWhileDestroying = false;
-    velocity = { x: 0, y: 0 };
-
-    constructor(owner: Level, shape: shape, type: String, color: color) {
-        super(owner, shape, type, color);
-    }
-
-    update(currentFrameDuration: number): void {
-        super.update(currentFrameDuration);
-        if (this.affectedByGravity) {
-            this.velocity.y += this.owner.gravity * currentFrameDuration / 1000;
-        }
-        if (!this.isDestroying || this.movesWhileDestroying) {
-            this.shape.x += this.velocity.x * currentFrameDuration / 1000;
-            this.shape.y += this.velocity.y * currentFrameDuration / 1000;
-        }
-
-    }
-}
-
 //what was this even for???
-class Actor extends MovingObject {
+class Actor extends GameObject {
     refireDelay = 1000; //ms
     lastFire = 0;
 
-    constructor(owner: Level, shape: shape, type: String, color: color) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color) {
         super(owner, shape, type, color);
     }
     register(): void {
@@ -183,12 +169,10 @@ class Actor extends MovingObject {
 
 }
 
-
-
 //basic projectile, not doing much
-class Projectile extends MovingObject {
+class Projectile extends GameObject {
     hasCollision = true;
-    constructor(owner: Level, shape: shape, type: String, color: color) {
+    constructor(owner: Level, shape: shape, type: collisionType, color: color) {
         super(owner, shape, type, color);
     }
     register(): void {

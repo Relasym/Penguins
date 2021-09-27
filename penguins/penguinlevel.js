@@ -3,6 +3,10 @@ class PenguinLevel extends Level {
         super(context);
         this.fishSpawnDelay = 1000; //ms
         this.sharkSpawnDelay = 5000; //ms
+        this.fishPerSpawn = 100;
+        this.sharksPerSpawn = 10;
+        this.maximumFish = 500;
+        this.maximumSharks = 100;
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
         this.start();
@@ -35,17 +39,17 @@ class PenguinLevel extends Level {
             this.camera.x = this.player.shape.x - 400 + this.player.shape.width / 2;
             this.camera.y = this.player.shape.y - 300 + this.player.shape.height / 2;
         }
-        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < 100) {
+        if (this.fishSpawnTimer > this.fishSpawnDelay && this.objectsByFaction[2].size < this.maximumFish) {
             this.fishSpawnTimer -= this.fishSpawnDelay;
             //add new Fish
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < this.fishPerSpawn; i++) {
                 this.newFish();
             }
         }
-        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].size < 5) {
+        if (this.sharkSpawnTimer > this.sharkSpawnDelay && this.objectsByFaction[3].size < this.maximumSharks) {
             this.sharkSpawnTimer -= this.sharkSpawnDelay;
             //add new Shark(s)
-            for (let i = 0; i < 1; i++) {
+            for (let i = 0; i < this.sharksPerSpawn; i++) {
                 this.newShark();
             }
         }
@@ -69,8 +73,9 @@ class PenguinLevel extends Level {
             let width = 2000000;
             let height = 10000;
             let color = skyColour;
-            let sky = new DrawableObject(this, { x: x, y: y, width: width, height: height }, "rectangle", color);
+            let sky = new GameObject(this, { x: x, y: y, width: width, height: height }, collisionType.Rectangle, color);
             sky.hasCollision = false;
+            sky.isUpdateable = false;
             sky.faction = 0;
             sky.register();
         }
@@ -80,12 +85,10 @@ class PenguinLevel extends Level {
         }
         //create player
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, collisionType.Rectangle, color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
-        player.velocity.x = 0;
-        player.velocity.y = 0;
         player.register();
         this.player = player;
     }
@@ -101,7 +104,7 @@ class PenguinLevel extends Level {
         let xvel = speed * (Math.random() - 0.5);
         let yvel = speed * (Math.random() - 0.5);
         let color = { r: 255, g: 255, b: 255, a: 1 };
-        let fish = new Fish(this, { x, y, width, height }, "rectangle", color);
+        let fish = new Fish(this, { x, y, width, height }, collisionType.Rectangle, color);
         fish.velocity.x = xvel;
         fish.velocity.y = yvel;
         fish.faction = 2;
@@ -117,7 +120,7 @@ class PenguinLevel extends Level {
         let xvel = speed * (Math.random() - 0.5);
         let yvel = speed * (Math.random() - 0.5);
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let shark = new Shark(this, { x, y, width, height }, "rectangle", color);
+        let shark = new Shark(this, { x, y, width, height }, collisionType.Rectangle, color);
         shark.sharkAccelerationFactor = 3 - 2 * scale;
         shark.velocity.x = xvel;
         shark.velocity.y = yvel;

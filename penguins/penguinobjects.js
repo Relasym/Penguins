@@ -3,7 +3,7 @@ class Fish extends Actor {
     constructor(owner, shape, type, color) {
         super(owner, shape, type, color);
         this.image = fishImage;
-        this.imageDirection = "right";
+        this.imageDirection = imageDirection.Right;
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
@@ -35,7 +35,7 @@ class Shark extends Actor {
         this.frictionPerSecond = 0.005;
         this.sharkAccelerationFactor = 3; // acceleration per distance from player per second
         this.image = sharkImage;
-        this.imageDirection = "left";
+        this.imageDirection = imageDirection.Left;
     }
     update(currentFrameDuration) {
         super.update(currentFrameDuration);
@@ -150,7 +150,7 @@ class Penguin extends Actor {
             let x = this.shape.x + this.shape.width / 2 - this.shape.height * 0.8 / 2 * Math.sin(this.rotation);
             let y = this.shape.y + this.shape.height / 2 + this.shape.height * 0.9 / 2 * Math.cos(this.rotation);
             let radius = 1 + (Math.random() * vectorLength(this.velocity) / 100);
-            let bubble = new MovingObject(this.owner, { x: x, y: y, radius: radius }, "circle", { r: 255, b: 255, g: 255, a: 0.7 });
+            let bubble = new GameObject(this.owner, { x: x, y: y, radius: radius }, collisionType.Circle, { r: 255, b: 255, g: 255, a: 0.7 });
             bubble.movesWhileDestroying = true;
             bubble.faction = this.faction;
             bubble.velocity.x = this.velocity.x * 0.5 + 50 * (Math.random() - 0.5);

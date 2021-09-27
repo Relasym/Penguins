@@ -33,7 +33,7 @@ class Level {
     }
 
     draw() {
-        this.drawableObjects.forEach((object: DrawableObject) => {
+        this.drawableObjects.forEach((object: GameObject) => {
             object.draw();
         });
         this.player.draw();
@@ -42,7 +42,7 @@ class Level {
     update(currentFrameDuration: number) {
         this.totalRuntime += currentFrameDuration;
 
-        this.updateableObjects.forEach((object: BasicObject) => {
+        this.updateableObjects.forEach((object: GameObject) => {
             object.update(currentFrameDuration);
         });
 
@@ -61,7 +61,7 @@ class Level {
 
         //create player last so its drawn last, great solution right here
         let color = { r: 0, g: 0, b: 0, a: 1 };
-        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, "rectangle", color, 3);
+        let player = new Penguin(this, { x: 300, y: 300, width: 30, height: 50 }, collisionType.Rectangle, color, 3);
         player.hasCollision = true;
         player.faction = 1;
         player.affectedByGravity = false;
@@ -76,7 +76,7 @@ class Level {
     handleCollisions(objectsByFaction: any, projectilesByFaction: any): void {/*collision checks and results go here*/ }
 }
 
-class GameObjectController<T extends BasicObject> {
+class GameObjectController<T extends GameObject> {
     fillFactor = 0.75;
     growFactor = 2;
     defaultSize = 10;
