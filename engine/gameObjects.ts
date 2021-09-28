@@ -28,6 +28,7 @@ interface BasicInterface {
     shape: shape;
     velocity: { x: any, y: any };
     isDestroying: boolean;
+    type: collisionType;
 }
 
 //basic object, includes register/deregister and destruction

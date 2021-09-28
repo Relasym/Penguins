@@ -103,7 +103,7 @@ document.addEventListener('keydown', (keypress) => {
     if (keypress.key == "3") {
         activateOrCreateLevel(3);
     }
-    if (keypress.key == "r") {
+    if (keypress.key == "r" && isPaused == false) {
         levels[currentLevel] = new PenguinLevel(context);
     }
 });

@@ -3,10 +3,10 @@ class PenguinLevel extends Level {
         super(context);
         this.fishSpawnDelay = 1000; //ms
         this.sharkSpawnDelay = 5000; //ms
-        this.fishPerSpawn = 100;
-        this.sharksPerSpawn = 10;
-        this.maximumFish = 500;
-        this.maximumSharks = 100;
+        this.fishPerSpawn = 10;
+        this.sharksPerSpawn = 1;
+        this.maximumFish = 100;
+        this.maximumSharks = 5;
         this.fishSpawnTimer = 0;
         this.sharkSpawnTimer = 0;
         this.start();
